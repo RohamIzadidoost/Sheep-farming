@@ -69,8 +69,8 @@ func main() {
 	reminderNotifier := external.NewConsoleNotifier()
 
 	// --- 4. Initialize Application Layer (Services/Use Cases) ---
-	userService := services.NewUserService(userRepo) // New: User service
-	authService := services.NewAuthService(userRepo) // New: Auth service (depends on userRepo)
+	userService := services.NewUserService(userRepo)              // NEW: Initialize UserService first
+	authService := services.NewAuthService(userRepo, userService) // UPDATED: Pass userService to AuthService
 
 	sheepService := services.NewSheepService(sheepRepo)
 	vaccineService := services.NewVaccineService(vaccineRepo)
@@ -79,7 +79,6 @@ func main() {
 	// --- 5. Initialize Scheduler ---
 	// The scheduler needs the User ID to schedule reminders for a specific user.
 	// In a full system, scheduler might get user IDs from database or a dedicated service.
-	// For this example, if scheduling for specific user, user ID must be passed.
 	// You might fetch all user IDs and schedule reminders for each.
 	fixedUserIDForScheduler := os.Getenv("SCHEDULER_USER_ID")
 	if fixedUserIDForScheduler == "" {

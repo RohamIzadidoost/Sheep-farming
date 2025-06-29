@@ -2,7 +2,7 @@ package services
 
 import (
 	"context"
-	"errors"
+	"errors" // Make sure errors is imported here
 	"fmt"
 	"os" // For JWT_SECRET_KEY
 	"time"
@@ -24,12 +24,14 @@ type Claims struct {
 
 // AuthService implements ports.AuthService.
 type AuthService struct {
-	userRepo     ports.UserRepository
+	userRepo     ports.UserRepository // Still need userRepo for Login/ValidateToken operations
+	userService  *UserService         // NEW: Dependency on UserService for user creation
 	jwtSecretKey []byte
 }
 
 // NewAuthService creates a new AuthService instance.
-func NewAuthService(userRepo ports.UserRepository) *AuthService {
+// UPDATED: Now accepts UserService as a dependency.
+func NewAuthService(userRepo ports.UserRepository, userService *UserService) *AuthService {
 	// Get JWT secret key from environment variable
 	jwtSecret := os.Getenv("JWT_SECRET_KEY")
 	if jwtSecret == "" {
@@ -40,11 +42,13 @@ func NewAuthService(userRepo ports.UserRepository) *AuthService {
 	}
 	return &AuthService{
 		userRepo:     userRepo,
+		userService:  userService, // Assign the passed UserService
 		jwtSecretKey: []byte(jwtSecret),
 	}
 }
 
 // Register registers a new user.
+// UPDATED: Calls userService.CreateUser to hash password and persist.
 func (s *AuthService) Register(ctx context.Context, email, password string) (*domain.User, error) {
 	// Basic validation for email and password length
 	if email == "" || password == "" {
@@ -56,11 +60,12 @@ func (s *AuthService) Register(ctx context.Context, email, password string) (*do
 
 	user := &domain.User{
 		Email:        email,
-		PasswordHash: password,        // This will be hashed in UserService.CreateUser
+		PasswordHash: password,        // PasswordHash will contain the plaintext password here, UserService will hash it
 		Role:         domain.RoleUser, // Default role
 	}
 
-	err := s.userRepo.CreateUser(ctx, user) // UserService handles hashing and checks for existing email
+	// CORRECTED: Call UserService.CreateUser to handle user creation and password hashing
+	err := s.userService.CreateUser(ctx, user)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +78,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 		return "", domain.ErrInvalidInput
 	}
 
-	user, err := s.userRepo.GetUserByEmail(ctx, email)
+	user, err := s.userRepo.GetUserByEmail(ctx, email) // Still uses userRepo for getting user by email
 	if err != nil {
 		if err == domain.ErrNotFound {
 			return "", domain.ErrInvalidCredentials // User not found
