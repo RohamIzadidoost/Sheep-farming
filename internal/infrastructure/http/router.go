@@ -8,8 +8,10 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/rs/cors" // CORS middleware
 
+	"sheep_farm_backend_go/internal/application/ports" // Import ports for auth service
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/infrastructure/http/handlers"
+	"sheep_farm_backend_go/internal/infrastructure/http/middleware" // New middleware
 )
 
 // Server represents the HTTP server.
@@ -17,18 +19,34 @@ type Server struct {
 	Router         *mux.Router
 	SheepHandler   *handlers.SheepHandler
 	VaccineHandler *handlers.VaccineHandler
+	AuthHandler    *handlers.AuthHandler      // New: Auth handler
+	AuthMiddleware *middleware.AuthMiddleware // New: Auth middleware
 }
 
 // NewServer creates a new HTTP server instance.
-func NewServer(sheepService *services.SheepService, vaccineService *services.VaccineService, fixedUserID string) *Server {
-	sheepHandler := handlers.NewSheepHandler(sheepService, fixedUserID)
-	vaccineHandler := handlers.NewVaccineHandler(vaccineService, fixedUserID)
+func NewServer(
+	sheepService *services.SheepService,
+	vaccineService *services.VaccineService,
+	authService ports.AuthService, // New: Auth service
+	userService *services.UserService, // New: User service for AuthHandler
+) *Server {
+
+	authHandler := handlers.NewAuthHandler(authService, userService) // Pass user service
+	authMiddleware := middleware.NewAuthMiddleware(authService)
+
+	// User ID will now be dynamically extracted from JWT in AuthMiddleware
+	// The fixedUserID passed to Sheep/Vaccine handlers is for demonstration before auth is fully implemented for every route.
+	// In production, SheepHandler and VaccineHandler would get user ID from context via middleware.
+	sheepHandler := handlers.NewSheepHandler(sheepService, "")       // Pass empty string, handler will get from context
+	vaccineHandler := handlers.NewVaccineHandler(vaccineService, "") // Pass empty string
 
 	router := mux.NewRouter()
 	s := &Server{
 		Router:         router,
 		SheepHandler:   sheepHandler,
 		VaccineHandler: vaccineHandler,
+		AuthHandler:    authHandler,    // New
+		AuthMiddleware: authMiddleware, // New
 	}
 	s.setupRoutes()
 	return s
@@ -38,19 +56,27 @@ func NewServer(sheepService *services.SheepService, vaccineService *services.Vac
 func (s *Server) setupRoutes() {
 	apiRouter := s.Router.PathPrefix("/api/v1").Subrouter()
 
-	// Sheep Routes
-	apiRouter.HandleFunc("/sheep", s.SheepHandler.CreateSheep).Methods("POST")
-	apiRouter.HandleFunc("/sheep", s.SheepHandler.GetAllSheep).Methods("GET")
-	apiRouter.HandleFunc("/sheep/{id}", s.SheepHandler.GetSheepByID).Methods("GET")
-	apiRouter.HandleFunc("/sheep/{id}", s.SheepHandler.UpdateSheep).Methods("PUT")
-	apiRouter.HandleFunc("/sheep/{id}", s.SheepHandler.DeleteSheep).Methods("DELETE")
+	// Public Auth Routes (no authentication required)
+	apiRouter.HandleFunc("/register", s.AuthHandler.Register).Methods("POST")
+	apiRouter.HandleFunc("/login", s.AuthHandler.Login).Methods("POST")
 
-	// Vaccine Routes
-	apiRouter.HandleFunc("/vaccines", s.VaccineHandler.CreateVaccine).Methods("POST")
-	apiRouter.HandleFunc("/vaccines", s.VaccineHandler.GetAllVaccines).Methods("GET")
-	apiRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.GetVaccineByID).Methods("GET")
-	apiRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.UpdateVaccine).Methods("PUT")
-	apiRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.DeleteVaccine).Methods("DELETE")
+	// Protected Routes (authentication required)
+	protectedRouter := apiRouter.PathPrefix("/").Subrouter()
+	protectedRouter.Use(s.AuthMiddleware.Authenticate) // Apply authentication middleware to all routes below
+
+	// Sheep Routes (now protected)
+	protectedRouter.HandleFunc("/sheep", s.SheepHandler.CreateSheep).Methods("POST")
+	protectedRouter.HandleFunc("/sheep", s.SheepHandler.GetAllSheep).Methods("GET")
+	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.GetSheepByID).Methods("GET")
+	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.UpdateSheep).Methods("PUT")
+	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.DeleteSheep).Methods("DELETE")
+
+	// Vaccine Routes (now protected)
+	protectedRouter.HandleFunc("/vaccines", s.VaccineHandler.CreateVaccine).Methods("POST")
+	protectedRouter.HandleFunc("/vaccines", s.VaccineHandler.GetAllVaccines).Methods("GET")
+	protectedRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.GetVaccineByID).Methods("GET")
+	protectedRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.UpdateVaccine).Methods("PUT")
+	protectedRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.DeleteVaccine).Methods("DELETE")
 
 	// Root endpoint for health check
 	s.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -64,7 +90,7 @@ func (s *Server) Start(addr string) {
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"}, // Allow your React app
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Authorization header is now important!
 		AllowCredentials: true,
 		Debug:            false, // Set to true for debugging CORS issues
 	})

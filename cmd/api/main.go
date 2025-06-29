@@ -8,7 +8,8 @@ import (
 
 	firebase "firebase.google.com/go" // Firebase Admin SDK core
 	"github.com/joho/godotenv"        // For loading .env file
-	"google.golang.org/api/option"
+	"google.golang.org/api/option"    // For credentials option
+
 	// Firestore client
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/infrastructure/external"
@@ -48,7 +49,7 @@ func main() {
 
 	log.Println("Firebase Firestore client initialized.")
 
-	// --- 2. Define App ID and Fixed User ID ---
+	// --- 2. Define App ID ---
 	// This appID should match the __app_id used in your React frontend.
 	// For local development, you might set it as an environment variable or hardcode if always default.
 	// This determines the root collection in Firestore for your application's data.
@@ -58,36 +59,41 @@ func main() {
 		log.Printf("APP_ID not set in environment, using default: %s", appID)
 	}
 
-	// For simplicity in this guide, we use a fixed user ID.
-	// In a real application, this user ID would come from your authentication system
-	// (e.g., from a JWT token sent by the frontend after user login).
-	fixedUserID := os.Getenv("FIXED_USER_ID")
-	if fixedUserID == "" {
-		fixedUserID = "test-user-id" // Default for local testing
-		log.Printf("FIXED_USER_ID not set in environment, using default: %s", fixedUserID)
-	}
-	log.Printf("Using fixed user ID for operations: %s", fixedUserID)
-
 	// --- 3. Initialize Infrastructure Layer (Repositories & Notifiers) ---
-	// Firestore Repository implementations
+	// Persistence Repositories
+	userRepo := persistence.NewFirestoreUserRepository(firestoreClient, appID) // New: User repository
 	sheepRepo := persistence.NewFirestoreRepository(firestoreClient, appID)
 	vaccineRepo := persistence.NewFirestoreRepository(firestoreClient, appID) // Same repository for vaccines
 
-	// External Notifier (e.g., console output, could be Twilio/SendGrid)
+	// External Notifier
 	reminderNotifier := external.NewConsoleNotifier()
 
 	// --- 4. Initialize Application Layer (Services/Use Cases) ---
+	userService := services.NewUserService(userRepo) // New: User service
+	authService := services.NewAuthService(userRepo) // New: Auth service (depends on userRepo)
+
 	sheepService := services.NewSheepService(sheepRepo)
 	vaccineService := services.NewVaccineService(vaccineRepo)
 	reminderService := services.NewReminderService(sheepRepo, vaccineRepo, reminderNotifier)
 
 	// --- 5. Initialize Scheduler ---
-	// The scheduler will periodically call reminderService.CalculateAndSendReminders
-	appScheduler := scheduler.NewScheduler(reminderService, fixedUserID)
+	// The scheduler needs the User ID to schedule reminders for a specific user.
+	// In a full system, scheduler might get user IDs from database or a dedicated service.
+	// For this example, if scheduling for specific user, user ID must be passed.
+	// You might fetch all user IDs and schedule reminders for each.
+	fixedUserIDForScheduler := os.Getenv("SCHEDULER_USER_ID")
+	if fixedUserIDForScheduler == "" {
+		fixedUserIDForScheduler = "test-user-id-for-scheduler" // Default for local testing
+		log.Printf("SCHEDULER_USER_ID not set, using default: %s", fixedUserIDForScheduler)
+	}
+
+	appScheduler := scheduler.NewScheduler(reminderService, fixedUserIDForScheduler)
 	appScheduler.StartScheduler() // Start the scheduler in a goroutine
 
 	// --- 6. Initialize and Start HTTP Server (Presentation Layer) ---
-	server := http.NewServer(sheepService, vaccineService, fixedUserID)
+	// User ID for handlers will now come from context after authentication.
+	// No need to pass fixedUserID to handlers directly anymore.
+	server := http.NewServer(sheepService, vaccineService, authService, userService) // Pass auth and user services
 	apiPort := os.Getenv("API_PORT")
 	if apiPort == "" {
 		apiPort = "8080" // Default port for API
@@ -98,10 +104,3 @@ func main() {
 	// The scheduler and HTTP server run concurrently.
 	// Cleanup happens when main exits, due to defer firestoreClient.Close() and appScheduler.StopScheduler()
 }
-
-// Ensure you have an .env file in the root of your Go backend project:
-// .env example:
-// FIREBASE_CREDENTIALS_PATH=/path/to/your/sheep-farm-app-firebase-adminsdk.json
-// APP_ID=default-app-id
-// FIXED_USER_ID=test-user-id-from-frontend-auth
-// API_PORT=8080
