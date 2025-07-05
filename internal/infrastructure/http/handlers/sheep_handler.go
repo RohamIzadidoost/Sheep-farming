@@ -10,19 +10,17 @@ import (
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/domain"
 	"sheep_farm_backend_go/internal/infrastructure/http/dto" // Import DTOs
+	"sheep_farm_backend_go/internal/infrastructure/http/middleware"
 )
 
 // SheepHandler handles HTTP requests related to sheep.
 type SheepHandler struct {
 	sheepService *services.SheepService
-	// In a real app, you'd have an auth service or middleware to get the current user ID.
-	// For simplicity, we'll use a fixed user ID for now.
-	fixedUserID string
 }
 
 // NewSheepHandler creates a new SheepHandler.
-func NewSheepHandler(sheepService *services.SheepService, fixedUserID string) *SheepHandler {
-	return &SheepHandler{sheepService: sheepService, fixedUserID: fixedUserID}
+func NewSheepHandler(sheepService *services.SheepService) *SheepHandler {
+	return &SheepHandler{sheepService: sheepService}
 }
 
 // CreateSheep handles POST /sheep requests.
@@ -33,7 +31,13 @@ func (h *SheepHandler) CreateSheep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sheep := req.ToDomain(h.fixedUserID) // Convert DTO to domain entity
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	sheep := req.ToDomain(userID) // Convert DTO to domain entity
 	if err := h.sheepService.CreateSheep(r.Context(), sheep); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -50,7 +54,13 @@ func (h *SheepHandler) GetSheepByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sheepID := vars["id"]
 
-	sheep, err := h.sheepService.GetSheepByID(r.Context(), h.fixedUserID, sheepID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	sheep, err := h.sheepService.GetSheepByID(r.Context(), userID, sheepID)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -67,7 +77,13 @@ func (h *SheepHandler) GetSheepByID(w http.ResponseWriter, r *http.Request) {
 
 // GetAllSheep handles GET /sheep requests.
 func (h *SheepHandler) GetAllSheep(w http.ResponseWriter, r *http.Request) {
-	sheepList, err := h.sheepService.GetAllSheep(r.Context(), h.fixedUserID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	sheepList, err := h.sheepService.GetAllSheep(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -95,7 +111,13 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get existing sheep to apply updates
-	existingSheep, err := h.sheepService.GetSheepByID(r.Context(), h.fixedUserID, sheepID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	existingSheep, err := h.sheepService.GetSheepByID(r.Context(), userID, sheepID)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -180,7 +202,13 @@ func (h *SheepHandler) DeleteSheep(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	sheepID := vars["id"]
 
-	if err := h.sheepService.DeleteSheep(r.Context(), h.fixedUserID, sheepID); err != nil {
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.sheepService.DeleteSheep(r.Context(), userID, sheepID); err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
