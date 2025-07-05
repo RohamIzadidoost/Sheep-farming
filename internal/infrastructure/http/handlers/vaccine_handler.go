@@ -9,17 +9,17 @@ import (
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/domain"
 	"sheep_farm_backend_go/internal/infrastructure/http/dto"
+	"sheep_farm_backend_go/internal/infrastructure/http/middleware"
 )
 
 // VaccineHandler handles HTTP requests related to vaccine definitions.
 type VaccineHandler struct {
 	vaccineService *services.VaccineService
-	fixedUserID    string // For simplicity, fixed user ID
 }
 
 // NewVaccineHandler creates a new VaccineHandler.
-func NewVaccineHandler(vaccineService *services.VaccineService, fixedUserID string) *VaccineHandler {
-	return &VaccineHandler{vaccineService: vaccineService, fixedUserID: fixedUserID}
+func NewVaccineHandler(vaccineService *services.VaccineService) *VaccineHandler {
+	return &VaccineHandler{vaccineService: vaccineService}
 }
 
 // CreateVaccine handles POST /vaccines requests.
@@ -30,7 +30,13 @@ func (h *VaccineHandler) CreateVaccine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	vaccine := req.ToDomain(h.fixedUserID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	vaccine := req.ToDomain(userID)
 	if err := h.vaccineService.CreateVaccine(r.Context(), vaccine); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -47,7 +53,13 @@ func (h *VaccineHandler) GetVaccineByID(w http.ResponseWriter, r *http.Request) 
 	vars := mux.Vars(r)
 	vaccineID := vars["id"]
 
-	vaccine, err := h.vaccineService.GetVaccineByID(r.Context(), h.fixedUserID, vaccineID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	vaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, vaccineID)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -64,7 +76,13 @@ func (h *VaccineHandler) GetVaccineByID(w http.ResponseWriter, r *http.Request) 
 
 // GetAllVaccines handles GET /vaccines requests.
 func (h *VaccineHandler) GetAllVaccines(w http.ResponseWriter, r *http.Request) {
-	vaccineList, err := h.vaccineService.GetAllVaccines(r.Context(), h.fixedUserID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	vaccineList, err := h.vaccineService.GetAllVaccines(r.Context(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -90,7 +108,13 @@ func (h *VaccineHandler) UpdateVaccine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existingVaccine, err := h.vaccineService.GetVaccineByID(r.Context(), h.fixedUserID, vaccineID)
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	existingVaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, vaccineID)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -122,7 +146,13 @@ func (h *VaccineHandler) DeleteVaccine(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	vaccineID := vars["id"]
 
-	if err := h.vaccineService.DeleteVaccine(r.Context(), h.fixedUserID, vaccineID); err != nil {
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	if err := h.vaccineService.DeleteVaccine(r.Context(), userID, vaccineID); err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return

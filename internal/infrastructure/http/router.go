@@ -37,8 +37,8 @@ func NewServer(
 	// User ID will now be dynamically extracted from JWT in AuthMiddleware
 	// The fixedUserID passed to Sheep/Vaccine handlers is for demonstration before auth is fully implemented for every route.
 	// In production, SheepHandler and VaccineHandler would get user ID from context via middleware.
-	sheepHandler := handlers.NewSheepHandler(sheepService, "")       // Pass empty string, handler will get from context
-	vaccineHandler := handlers.NewVaccineHandler(vaccineService, "") // Pass empty string
+	sheepHandler := handlers.NewSheepHandler(sheepService)
+	vaccineHandler := handlers.NewVaccineHandler(vaccineService)
 
 	router := mux.NewRouter()
 	s := &Server{
