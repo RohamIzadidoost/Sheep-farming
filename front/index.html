@@ -2,26 +2,48 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>سامانه مدیریت گوسفندان هلشتاین</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-    <div class="container">
-        <h1>سامانه مدیریت گوسفندان هلشتاین</h1>
-        <div id="status" class="status">در حال بررسی ارتباط با سرور...</div>
-        <form id="loginForm" class="login-form">
-            <label>ایمیل
-                <input type="email" id="email" required>
-            </label>
-            <label>گذرواژه
-                <input type="password" id="password" required>
-            </label>
-            <button type="submit">ورود</button>
-        </form>
-        <div id="loginMessage" class="message"></div>
-    </div>
+<body class="d-flex flex-column min-vh-100">
+    <header class="navbar navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <span class="navbar-brand mx-auto h1">هلشتاین</span>
+        </div>
+    </header>
+    <main class="flex-grow-1 d-flex align-items-center justify-content-center hero-space">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h1 class="card-title text-center fs-4 mb-4">سامانه مدیریت گوسفندان هلشتاین</h1>
+                            <div id="status" class="text-center small mb-3">در حال بررسی ارتباط با سرور...</div>
+                            <form id="loginForm">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">ایمیل</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">گذرواژه</label>
+                                    <input type="password" class="form-control" id="password" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 py-2">ورود</button>
+                            </form>
+                            <div id="loginMessage" class="text-center small mt-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        گوسفندداری ورامین
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
