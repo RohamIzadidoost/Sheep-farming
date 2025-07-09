@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>داشبورد هلشتاین</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <header class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">هلشتاین</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="تغییر منو">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="dashboard.html">داشبورد</a></li>
+                    <li class="nav-item"><a class="nav-link" href="sheep.html">گوسفندان</a></li>
+                    <li class="nav-item"><a class="nav-link" href="vaccine.html">واکسیناسیون</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow-1 container-fluid mt-5 pt-4">
+        <div class="row g-4 mb-4">
+            <div class="col-6 col-md-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <i class="fa-solid fa-hippo fa-2x mb-2 text-primary"></i>
+                        <h5 class="card-title">تعداد کل</h5>
+                        <p class="card-text" id="statTotal">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <i class="fa-solid fa-baby fa-2x mb-2 text-warning"></i>
+                        <h5 class="card-title">آبستن</h5>
+                        <p class="card-text" id="statPregnant">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <i class="fa-solid fa-syringe fa-2x mb-2 text-success"></i>
+                        <h5 class="card-title">واکسیناسیون</h5>
+                        <p class="card-text" id="statVaccine">0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="card text-center shadow-sm">
+                    <div class="card-body">
+                        <i class="fa-solid fa-exclamation-triangle fa-2x mb-2 text-danger"></i>
+                        <h5 class="card-title">امور معوق</h5>
+                        <p class="card-text" id="statOverdue">0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mb-3">یادآورها</h3>
+        <div id="reminderList" class="row g-3">
+            <!-- Reminders will be inserted here -->
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3 mt-auto">
+        گوسفندداری ورامین
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
