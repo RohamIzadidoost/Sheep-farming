@@ -77,13 +77,28 @@ func (req *CreateSheepRequest) ToDomain(ownerUserID string) *domain.Sheep {
 		}
 	}
 
+	var breedingDate *time.Time
+	if req.BreedingDate != nil {
+		breedingDate = req.BreedingDate.ToTimePtr()
+	}
+
+	var lastShearingDate *time.Time
+	if req.LastShearingDate != nil {
+		lastShearingDate = req.LastShearingDate.ToTimePtr()
+	}
+
+	var lastHoofTrimDate *time.Time
+	if req.LastHoofTrimDate != nil {
+		lastHoofTrimDate = req.LastHoofTrimDate.ToTimePtr()
+	}
+
 	return &domain.Sheep{
 		Name:             req.Name,
 		Gender:           req.Gender,
 		DateOfBirth:      time.Time(req.DateOfBirth),
-		BreedingDate:     req.BreedingDate.ToTimePtr(),
-		LastShearingDate: req.LastShearingDate.ToTimePtr(),
-		LastHoofTrimDate: req.LastHoofTrimDate.ToTimePtr(),
+		BreedingDate:     breedingDate,
+		LastShearingDate: lastShearingDate,
+		LastHoofTrimDate: lastHoofTrimDate,
 		PhotoURL:         req.PhotoURL,
 		Vaccinations:     domainVaccinations,
 		Treatments:       domainTreatments,
