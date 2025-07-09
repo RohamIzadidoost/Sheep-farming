@@ -11,9 +11,10 @@ fetch('http://localhost:8080/')
       statusEl.textContent = 'عدم ارتباط با سرور';
     }
   })
-  .catch(() => {
-    statusEl.textContent = 'عدم ارتباط با سرور';
-  });
+  .catch((err) => {
+  console.error('خطای ارتباط با سرور:', err);
+  statusEl.textContent = 'عدم ارتباط با سرور';
+});
 
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -27,11 +28,16 @@ loginForm.addEventListener('submit', async (e) => {
         password: document.getElementById('password').value
       })
     });
-    if (!res.ok) throw new Error('خطا در ورود');
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('خطای ورود:', res.status, errorText);
+      throw new Error('خطا در ورود');
+    }
     const data = await res.json();
     localStorage.setItem('token', data.token);
     loginMessage.textContent = 'ورود موفق';
   } catch (err) {
+    console.error('خطای ورود:', err);
     loginMessage.textContent = 'ورود ناموفق';
   }
 });

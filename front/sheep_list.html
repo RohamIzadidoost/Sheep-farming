@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لیست گوسفندها</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="sheepListPage">
+  <div id="header"></div>
+  <div class="container">
+    <h1>لیست گوسفندها</h1>
+    <label>جنسیت
+      <select id="genderFilter">
+        <option value="">همه</option>
+        <option value="male">نر</option>
+        <option value="female">ماده</option>
+      </select>
+    </label>
+    <label>حداقل سن (سال)
+      <input type="number" id="ageFilter" min="0">
+    </label>
+    <ul id="sheepList"></ul>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

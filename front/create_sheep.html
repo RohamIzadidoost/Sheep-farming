@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ایجاد گوسفند</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/jalaali-js@1.1.0/index.min.js"></script>
+</head>
+<body id="createSheepPage">
+  <div id="header"></div>
+  <div class="container">
+    <h1>ایجاد گوسفند</h1>
+    <form id="sheepForm" class="form">
+      <label>نام
+        <input type="text" id="name" required>
+      </label>
+      <label>جنسیت
+        <select id="gender">
+          <option value="">--انتخاب--</option>
+          <option value="male">نر</option>
+          <option value="female">ماده</option>
+        </select>
+      </label>
+      <label>تاریخ تولد (جلالی YYYY-MM-DD)
+        <input type="text" id="dob" placeholder="1403-01-01" required>
+      </label>
+      <button type="submit">ثبت</button>
+    </form>
+    <div id="sheepMsg" class="message"></div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
