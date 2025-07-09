@@ -31,6 +31,7 @@ loginForm.addEventListener('submit', async (e) => {
     const data = await res.json();
     localStorage.setItem('token', data.token);
     loginMessage.textContent = 'ورود موفق';
+    window.location.href = 'dashboard.html';
   } catch (err) {
     loginMessage.textContent = 'ورود ناموفق';
   }

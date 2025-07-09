@@ -22,3 +22,13 @@ body {
 .btn-primary:hover {
     transform: scale(1.05);
 }
+
+/* Dashboard reminders */
+.alert i {
+    width: 1.5rem;
+    text-align: center;
+}
+
+table th {
+    white-space: nowrap;
+}
