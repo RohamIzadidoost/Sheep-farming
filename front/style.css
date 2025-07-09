@@ -2,6 +2,10 @@ body {
     font-family: 'Vazirmatn', sans-serif;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     min-height: 100vh;
+    background-image: url('https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/svg/1f411.svg');
+    background-repeat: no-repeat;
+    background-position: bottom left;
+    background-size: 120px;
 }
 
 .hero-space {
@@ -21,4 +25,12 @@ body {
 
 .btn-primary:hover {
     transform: scale(1.05);
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f0f8ff;
 }

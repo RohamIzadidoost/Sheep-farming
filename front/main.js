@@ -1,6 +1,7 @@
 const statusEl = document.getElementById('status');
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
+const API_BASE = 'http://localhost:8080/api/v1';
 
 // Check connection to backend
 fetch('http://localhost:8080/')
@@ -19,7 +20,7 @@ loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   loginMessage.textContent = 'در حال ورود...';
   try {
-    const res = await fetch('http://localhost:8080/api/v1/login', {
+    const res = await fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -31,6 +32,7 @@ loginForm.addEventListener('submit', async (e) => {
     const data = await res.json();
     localStorage.setItem('token', data.token);
     loginMessage.textContent = 'ورود موفق';
+    window.location.href = 'dashboard.html';
   } catch (err) {
     loginMessage.textContent = 'ورود ناموفق';
   }
