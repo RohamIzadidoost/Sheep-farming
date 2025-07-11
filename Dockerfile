@@ -29,7 +29,7 @@ COPY ./sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json .
 
 ENV GOOGLE_APPLICATION_CREDENTIALS="/app/sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json"
 
-
+run ls
 EXPOSE 8080
 
 CMD [ "./main" ]
