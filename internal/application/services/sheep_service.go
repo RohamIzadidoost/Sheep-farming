@@ -120,3 +120,99 @@ func (s *SheepService) AddLambing(ctx context.Context, userID, sheepID string, l
 	sh.Lambings = append(sh.Lambings, l)
 	return s.repo.UpdateSheep(ctx, sh)
 }
+
+// UpdateVaccination updates a vaccination record by index.
+func (s *SheepService) UpdateVaccination(ctx context.Context, userID, sheepID string, index int, v domain.Vaccination) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	if index < 0 || index >= len(sh.Vaccinations) {
+		return domain.ErrNotFound
+	}
+	sh.Vaccinations[index] = v
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// DeleteVaccination removes a vaccination record by index.
+func (s *SheepService) DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	if index < 0 || index >= len(sh.Vaccinations) {
+		return domain.ErrNotFound
+	}
+	sh.Vaccinations = append(sh.Vaccinations[:index], sh.Vaccinations[index+1:]...)
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// UpdateTreatment updates a treatment record by index.
+func (s *SheepService) UpdateTreatment(ctx context.Context, userID, sheepID string, index int, t domain.Treatment) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	if index < 0 || index >= len(sh.Treatments) {
+		return domain.ErrNotFound
+	}
+	sh.Treatments[index] = t
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// DeleteTreatment removes a treatment record by index.
+func (s *SheepService) DeleteTreatment(ctx context.Context, userID, sheepID string, index int) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	if index < 0 || index >= len(sh.Treatments) {
+		return domain.ErrNotFound
+	}
+	sh.Treatments = append(sh.Treatments[:index], sh.Treatments[index+1:]...)
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// UpdateLambing updates a lambing record by index.
+func (s *SheepService) UpdateLambing(ctx context.Context, userID, sheepID string, index int, l domain.Lambing) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	if index < 0 || index >= len(sh.Lambings) {
+		return domain.ErrNotFound
+	}
+	sh.Lambings[index] = l
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// DeleteLambing removes a lambing record by index.
+func (s *SheepService) DeleteLambing(ctx context.Context, userID, sheepID string, index int) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	if index < 0 || index >= len(sh.Lambings) {
+		return domain.ErrNotFound
+	}
+	sh.Lambings = append(sh.Lambings[:index], sh.Lambings[index+1:]...)
+	return s.repo.UpdateSheep(ctx, sh)
+}
