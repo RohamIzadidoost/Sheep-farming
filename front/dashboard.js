@@ -10,23 +10,10 @@ function loadStats() {
         .then(res => res.json())
         .then(data => {
             const total = data.length;
-            const pregnant = data.filter(s => s.reproductionState === 'pregnant').length;
-            const sick = data.filter(s => s.healthState === 'sick').length;
-            const treated = data.filter(s => s.healthState === 'under_treatment').length;
-            let birthsThisMonth = 0;
-            const now = new Date();
-            data.forEach(s => {
-                (s.lambings || []).forEach(l => {
-                    const d = new Date(l.date);
-                    if(d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) birthsThisMonth += l.numBorn;
-                });
-            });
+            const pregnant = data.filter(s => s.breedingDate).length;
             const stats = [
                 { label: 'تعداد کل', value: total, icon: 'bi bi-emoji-smile' },
-                { label: 'آبستن', value: pregnant, icon: 'bi bi-heart-fill' },
-                { label: 'متولد این ماه', value: birthsThisMonth, icon: 'bi bi-baby' },
-                { label: 'بیمار', value: sick, icon: 'bi bi-emoji-frown' },
-                { label: 'تحت درمان', value: treated, icon: 'bi bi-hospital' }
+                { label: 'آبستن', value: pregnant, icon: 'bi bi-heart-fill' }
             ];
             const container = document.getElementById('statsCards');
             stats.forEach(s => {
@@ -53,24 +40,11 @@ function loadReminders() {
                 container.textContent = 'یادآوری برای نمایش وجود ندارد';
                 return;
             }
-            const groups = {};
             data.forEach(r => {
-                if (!groups[r.type]) groups[r.type] = [];
-                groups[r.type].push(r.message);
-            });
-            Object.keys(groups).forEach(k => {
-                const card = document.createElement('div');
-                card.className = 'card mb-2';
-                const body = document.createElement('div');
-                body.className = 'card-body';
-                body.innerHTML = `<strong>${k}</strong><ul class="mb-0"></ul>`;
-                groups[k].forEach(m => {
-                    const li = document.createElement('li');
-                    li.textContent = m;
-                    body.querySelector('ul').appendChild(li);
-                });
-                card.appendChild(body);
-                container.appendChild(card);
+                const alert = document.createElement('div');
+                alert.className = 'alert alert-warning d-flex align-items-center';
+                alert.innerHTML = `<i class="bi bi-bell-fill me-2"></i><div>${r.message}</div>`;
+                container.appendChild(alert);
             });
         });
 }
