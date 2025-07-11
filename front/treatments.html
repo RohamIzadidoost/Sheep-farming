@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>داشبورد - هلشتاین</title>
+    <title>درمان‌ها</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
@@ -12,32 +12,33 @@
 <body class="bg-light">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
-        <a class="navbar-brand" href="#">هلشتاین</a>
+        <a class="navbar-brand" href="dashboard.html">هلشتاین</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link active" href="dashboard.html">داشبورد</a></li>
+                <li class="nav-item"><a class="nav-link" href="dashboard.html">داشبورد</a></li>
                 <li class="nav-item"><a class="nav-link" href="sheep.html">گوسفندها</a></li>
                 <li class="nav-item"><a class="nav-link" href="vaccines.html">واکسن‌ها</a></li>
                 <li class="nav-item"><a class="nav-link" href="vaccinations.html">واکسیناسیون</a></li>
-                <li class="nav-item"><a class="nav-link" href="treatments.html">درمان‌ها</a></li>
-                </ul>
+                <li class="nav-item"><a class="nav-link active" href="treatments.html">درمان‌ها</a></li>
+            </ul>
         </div>
     </div>
 </nav>
 <main class="container pt-5 mt-4">
-    <div class="row g-3" id="statsCards">
-        <!-- Stats will be inserted here -->
-    </div>
-    <h2 class="mt-4">یادآورها</h2>
-    <div id="reminders" class="mt-3">
-        <!-- Reminder cards -->
-    </div>
+    <h2 class="mb-3">سوابق درمان</h2>
+    <table class="table table-bordered table-hover" id="treatTable">
+        <thead class="table-light">
+            <tr><th>گوسفند</th><th>بیماری</th><th>توضیح درمان</th><th>تاریخ</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="persian-date.js"></script>
 <script src="main.js"></script>
-<script src="dashboard.js"></script>
+<script src="treatments.js"></script>
 </body>
 </html>
