@@ -48,6 +48,7 @@ window.editSheep = function(id) {
             editingId = id;
             document.getElementById('sheepGender').value = s.gender;
             document.getElementById('sheepDob').value = s.dateOfBirth.split('T')[0];
+            document.getElementById('birthWeight').value = s.birthWeight || '';
             document.getElementById('ear1').value = s.earNumber1;
             document.getElementById('ear2').value = s.earNumber2 || '';
             document.getElementById('ear3').value = s.earNumber3 || '';
@@ -92,23 +93,23 @@ window.showSheep = function(id) {
                     });
                     const vaccList = document.getElementById('vaccList');
                     vaccList.innerHTML = '';
-                    (s.vaccinations || []).forEach(v => {
+                    (s.vaccinations || []).forEach((v, i) => {
                         const li = document.createElement('li');
-                        li.textContent = `${v.vaccine} - ${v.date.split('T')[0]}`;
+                        li.innerHTML = `${v.vaccine} - ${v.date.split('T')[0]} <button class="btn btn-sm btn-danger ms-2" onclick="deleteVacc(${i})">حذف</button>`;
                         vaccList.appendChild(li);
                     });
                     const treatList = document.getElementById('treatList');
                     treatList.innerHTML = '';
-                    (s.treatments || []).forEach(t => {
+                    (s.treatments || []).forEach((t, i) => {
                         const li = document.createElement('li');
-                        li.textContent = `${t.diseaseDescription} - ${t.date.split('T')[0]}`;
+                        li.innerHTML = `${t.diseaseDescription} - ${t.date.split('T')[0]} <button class="btn btn-sm btn-danger ms-2" onclick="deleteTreat(${i})">حذف</button>`;
                         treatList.appendChild(li);
                     });
                     const lambList = document.getElementById('lambList');
                     lambList.innerHTML = '';
-                    (s.lambings || []).forEach(l => {
+                    (s.lambings || []).forEach((l, i) => {
                         const li = document.createElement('li');
-                        li.textContent = `${l.date.split('T')[0]} - ${l.numBorn}`;
+                        li.innerHTML = `${l.date.split('T')[0]} - ${l.numBorn} <button class="btn btn-sm btn-danger ms-2" onclick="deleteLamb(${i})">حذف</button>`;
                         lambList.appendChild(li);
                     });
                     bootstrap.Modal.getOrCreateInstance(document.getElementById('detailModal')).show();
@@ -199,6 +200,7 @@ form.addEventListener('submit', e => {
     const body = JSON.stringify({
         gender: document.getElementById('sheepGender').value,
         dateOfBirth: document.getElementById('sheepDob').value,
+        birthWeight: parseFloat(document.getElementById('birthWeight').value) || 0,
         earNumber1: document.getElementById('ear1').value,
         earNumber2: document.getElementById('ear2').value,
         earNumber3: document.getElementById('ear3').value,
@@ -216,3 +218,20 @@ form.addEventListener('submit', e => {
 });
 
 loadSheep();
+window.deleteVacc = function(idx) {
+    if (!currentSheep) return;
+    fetch(`${API_BASE}/sheep/${currentSheep.id}/vaccinations/${idx}`, { method: 'DELETE', headers: headersSheep })
+        .then(() => showSheep(currentSheep.id));
+};
+
+window.deleteTreat = function(idx) {
+    if (!currentSheep) return;
+    fetch(`${API_BASE}/sheep/${currentSheep.id}/treatments/${idx}`, { method: 'DELETE', headers: headersSheep })
+        .then(() => showSheep(currentSheep.id));
+};
+
+window.deleteLamb = function(idx) {
+    if (!currentSheep) return;
+    fetch(`${API_BASE}/sheep/${currentSheep.id}/lambings/${idx}`, { method: 'DELETE', headers: headersSheep })
+        .then(() => showSheep(currentSheep.id));
+};

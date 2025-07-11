@@ -75,8 +75,16 @@ func (s *Server) setupRoutes() {
 	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.UpdateSheep).Methods("PUT")
 	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.DeleteSheep).Methods("DELETE")
 	protectedRouter.HandleFunc("/sheep/{id}/vaccinations", s.SheepHandler.AddVaccination).Methods("POST")
+	protectedRouter.HandleFunc("/sheep/{id}/vaccinations/{idx}", s.SheepHandler.UpdateVaccination).Methods("PUT")
+	protectedRouter.HandleFunc("/sheep/{id}/vaccinations/{idx}", s.SheepHandler.DeleteVaccination).Methods("DELETE")
+
 	protectedRouter.HandleFunc("/sheep/{id}/treatments", s.SheepHandler.AddTreatment).Methods("POST")
+	protectedRouter.HandleFunc("/sheep/{id}/treatments/{idx}", s.SheepHandler.UpdateTreatment).Methods("PUT")
+	protectedRouter.HandleFunc("/sheep/{id}/treatments/{idx}", s.SheepHandler.DeleteTreatment).Methods("DELETE")
+
 	protectedRouter.HandleFunc("/sheep/{id}/lambings", s.SheepHandler.AddLambing).Methods("POST")
+	protectedRouter.HandleFunc("/sheep/{id}/lambings/{idx}", s.SheepHandler.UpdateLambing).Methods("PUT")
+	protectedRouter.HandleFunc("/sheep/{id}/lambings/{idx}", s.SheepHandler.DeleteLambing).Methods("DELETE")
 
 	// Reminder Route
 	protectedRouter.HandleFunc("/reminders", s.ReminderHandler.GetReminders).Methods("GET")

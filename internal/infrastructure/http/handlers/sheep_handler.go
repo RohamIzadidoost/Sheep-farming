@@ -367,3 +367,194 @@ func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+// UpdateVaccination handles PUT /sheep/{id}/vaccinations/{idx} requests.
+func (h *SheepHandler) UpdateVaccination(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+	idxStr := vars["idx"]
+	index, err := strconv.Atoi(idxStr)
+	if err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	var req dto.VaccinationDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	err = h.sheepService.UpdateVaccination(r.Context(), userID, sheepID, index, domain.Vaccination{
+		Date:        time.Time(req.Date),
+		Vaccine:     req.Vaccine,
+		Vaccinator:  req.Vaccinator,
+		Description: req.Description,
+	})
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteVaccination handles DELETE /sheep/{id}/vaccinations/{idx} requests.
+func (h *SheepHandler) DeleteVaccination(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+	idxStr := vars["idx"]
+	index, err := strconv.Atoi(idxStr)
+	if err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	err = h.sheepService.DeleteVaccination(r.Context(), userID, sheepID, index)
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// UpdateTreatment handles PUT /sheep/{id}/treatments/{idx} requests.
+func (h *SheepHandler) UpdateTreatment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+	idxStr := vars["idx"]
+	index, err := strconv.Atoi(idxStr)
+	if err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	var req dto.TreatmentDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	err = h.sheepService.UpdateTreatment(r.Context(), userID, sheepID, index, domain.Treatment{
+		Date:               time.Time(req.Date),
+		DiseaseDescription: req.DiseaseDescription,
+		TreatDescription:   req.TreatDescription,
+	})
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteTreatment handles DELETE /sheep/{id}/treatments/{idx} requests.
+func (h *SheepHandler) DeleteTreatment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+	idxStr := vars["idx"]
+	index, err := strconv.Atoi(idxStr)
+	if err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	err = h.sheepService.DeleteTreatment(r.Context(), userID, sheepID, index)
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// UpdateLambing handles PUT /sheep/{id}/lambings/{idx} requests.
+func (h *SheepHandler) UpdateLambing(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+	idxStr := vars["idx"]
+	index, err := strconv.Atoi(idxStr)
+	if err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	var req dto.LambingDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	err = h.sheepService.UpdateLambing(r.Context(), userID, sheepID, index, domain.Lambing{
+		Date:    time.Time(req.Date),
+		NumBorn: req.NumBorn,
+		Sexes:   req.Sexes,
+		NumDead: req.NumDead,
+	})
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+// DeleteLambing handles DELETE /sheep/{id}/lambings/{idx} requests.
+func (h *SheepHandler) DeleteLambing(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+	idxStr := vars["idx"]
+	index, err := strconv.Atoi(idxStr)
+	if err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+	err = h.sheepService.DeleteLambing(r.Context(), userID, sheepID, index)
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
