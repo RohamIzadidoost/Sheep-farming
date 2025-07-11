@@ -81,3 +81,42 @@ func (s *SheepService) DeleteSheep(ctx context.Context, userID, sheepID string) 
 	// Add business rules specific to deleting
 	return s.repo.DeleteSheep(ctx, userID, sheepID)
 }
+
+// AddVaccination appends a vaccination record to the sheep.
+func (s *SheepService) AddVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	sh.Vaccinations = append(sh.Vaccinations, v)
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// AddTreatment appends a treatment record to the sheep.
+func (s *SheepService) AddTreatment(ctx context.Context, userID, sheepID string, t domain.Treatment) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	sh.Treatments = append(sh.Treatments, t)
+	return s.repo.UpdateSheep(ctx, sh)
+}
+
+// AddLambing appends a lambing record to the sheep.
+func (s *SheepService) AddLambing(ctx context.Context, userID, sheepID string, l domain.Lambing) error {
+	sh, err := s.repo.GetSheepByID(ctx, userID, sheepID)
+	if err != nil {
+		return err
+	}
+	if sh.OwnerUserID != userID {
+		return domain.ErrUnauthorized
+	}
+	sh.Lambings = append(sh.Lambings, l)
+	return s.repo.UpdateSheep(ctx, sh)
+}

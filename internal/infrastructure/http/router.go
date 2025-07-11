@@ -74,6 +74,9 @@ func (s *Server) setupRoutes() {
 	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.GetSheepByID).Methods("GET")
 	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.UpdateSheep).Methods("PUT")
 	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.DeleteSheep).Methods("DELETE")
+	protectedRouter.HandleFunc("/sheep/{id}/vaccinations", s.SheepHandler.AddVaccination).Methods("POST")
+	protectedRouter.HandleFunc("/sheep/{id}/treatments", s.SheepHandler.AddTreatment).Methods("POST")
+	protectedRouter.HandleFunc("/sheep/{id}/lambings", s.SheepHandler.AddLambing).Methods("POST")
 
 	// Reminder Route
 	protectedRouter.HandleFunc("/reminders", s.ReminderHandler.GetReminders).Methods("GET")
