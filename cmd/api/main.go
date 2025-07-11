@@ -92,7 +92,7 @@ func main() {
 	// --- 6. Initialize and Start HTTP Server (Presentation Layer) ---
 	// User ID for handlers will now come from context after authentication.
 	// No need to pass fixedUserID to handlers directly anymore.
-	server := http.NewServer(sheepService, vaccineService, authService, userService) // Pass auth and user services
+	server := http.NewServer(sheepService, vaccineService, authService, userService, reminderService) // Pass reminder service too
 	apiPort := os.Getenv("API_PORT")
 	if apiPort == "" {
 		apiPort = "8080" // Default port for API
