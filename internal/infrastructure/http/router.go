@@ -95,7 +95,7 @@ func (s *Server) setupRoutes() {
 func (s *Server) Start(addr string) {
 	// Configure CORS
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"}, // Allow your React app
+		AllowedOrigins:   []string{"http://localhost:3000", "http://[::]:5500"}, // Allow your React app
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Authorization header is now important!
 		AllowCredentials: true,
