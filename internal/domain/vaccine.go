@@ -4,9 +4,10 @@ import "time"
 
 // Vaccination represents a vaccine record for a sheep.
 type Vaccination struct {
-	VaccineID   string    `json:"vaccineId" firestore:"vaccineId"` // Reference to a defined Vaccine
 	Date        time.Time `json:"date" firestore:"date"`
-	Description string    `json:"description,omitempty" firestore:"description,omitempty"` // Optional notes
+	Vaccine     string    `json:"vaccine" firestore:"vaccine"`
+	Vaccinator  string    `json:"vaccinator" firestore:"vaccinator"`
+	Description string    `json:"description,omitempty" firestore:"description,omitempty"`
 }
 
 // Vaccine represents a type of vaccine defined by the user.

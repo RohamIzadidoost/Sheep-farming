@@ -47,20 +47,6 @@ func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID 
 	now := time.Now()
 
 	for _, sheep := range sheepList {
-		// Lambing reminder (approx. 5 months after breeding)
-		if sheep.BreedingDate != nil {
-			lambingDate := sheep.BreedingDate.AddDate(0, 5, 0)
-			if lambingDate.After(now) && lambingDate.Before(now.AddDate(0, 1, 0)) { // Remind within next month
-				upcomingReminders = append(upcomingReminders, domain.Reminder{
-					Type:        domain.ReminderTypeLambing,
-					SheepID:     sheep.ID,
-					SheepName:   sheep.Name,
-					DueDate:     lambingDate,
-					Message:     fmt.Sprintf("زمان تقریبی زایمان گوسفند %s در تاریخ %s است.", sheep.Name, toPersianDate(lambingDate)),
-					OwnerUserID: userID,
-				})
-			}
-		}
 
 		// Shearing reminder (e.g., annually from last shearing)
 		if sheep.LastShearingDate != nil {
@@ -69,9 +55,9 @@ func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID 
 				upcomingReminders = append(upcomingReminders, domain.Reminder{
 					Type:        domain.ReminderTypeShearing,
 					SheepID:     sheep.ID,
-					SheepName:   sheep.Name,
+					SheepName:   sheep.EarNumber1,
 					DueDate:     nextShearingDate,
-					Message:     fmt.Sprintf("زمان پشم‌چینی گوسفند %s در تاریخ %s نزدیک است.", sheep.Name, toPersianDate(nextShearingDate)),
+					Message:     fmt.Sprintf("زمان پشم‌چینی گوسفند %s در تاریخ %s نزدیک است.", sheep.EarNumber1, toPersianDate(nextShearingDate)),
 					OwnerUserID: userID,
 				})
 			}
@@ -84,9 +70,9 @@ func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID 
 				upcomingReminders = append(upcomingReminders, domain.Reminder{
 					Type:        domain.ReminderTypeHoofTrim,
 					SheepID:     sheep.ID,
-					SheepName:   sheep.Name,
+					SheepName:   sheep.EarNumber1,
 					DueDate:     nextHoofTrimDate,
-					Message:     fmt.Sprintf("زمان سم‌چینی گوسفند %s در تاریخ %s نزدیک است.", sheep.Name, toPersianDate(nextHoofTrimDate)),
+					Message:     fmt.Sprintf("زمان سم‌چینی گوسفند %s در تاریخ %s نزدیک است.", sheep.EarNumber1, toPersianDate(nextHoofTrimDate)),
 					OwnerUserID: userID,
 				})
 			}
@@ -94,16 +80,16 @@ func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID 
 
 		// Vaccination reminders based on intervalMonths
 		for _, vax := range sheep.Vaccinations {
-			if vaxDef, ok := vaccineMap[vax.VaccineID]; ok {
+			if vaxDef, ok := vaccineMap[vax.Vaccine]; ok {
 				nextVaccinationDate := vax.Date.AddDate(0, vaxDef.IntervalMonths, 0)
 				if nextVaccinationDate.After(now) && nextVaccinationDate.Before(now.AddDate(0, 1, 0)) { // Remind within next month
 					upcomingReminders = append(upcomingReminders, domain.Reminder{
 						Type:        domain.ReminderTypeVaccination,
 						SheepID:     sheep.ID,
-						SheepName:   sheep.Name,
+						SheepName:   sheep.EarNumber1,
 						VaccineName: vaxDef.Name,
 						DueDate:     nextVaccinationDate,
-						Message:     fmt.Sprintf("زمان واکسن %s برای گوسفند %s در تاریخ %s نزدیک است.", vaxDef.Name, sheep.Name, toPersianDate(nextVaccinationDate)),
+						Message:     fmt.Sprintf("زمان واکسن %s برای گوسفند %s در تاریخ %s نزدیک است.", vaxDef.Name, sheep.EarNumber1, toPersianDate(nextVaccinationDate)),
 						OwnerUserID: userID,
 					})
 				}

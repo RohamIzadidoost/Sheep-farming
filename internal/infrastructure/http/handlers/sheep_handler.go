@@ -128,23 +128,29 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Apply updates from DTO to domain entity
-	if req.Name != nil {
-		existingSheep.Name = *req.Name
+	if req.EarNumber1 != nil {
+		existingSheep.EarNumber1 = *req.EarNumber1
+	}
+	if req.EarNumber2 != nil {
+		existingSheep.EarNumber2 = *req.EarNumber2
+	}
+	if req.EarNumber3 != nil {
+		existingSheep.EarNumber3 = *req.EarNumber3
+	}
+	if req.NeckNumber != nil {
+		existingSheep.NeckNumber = *req.NeckNumber
+	}
+	if req.FatherGen != nil {
+		existingSheep.FatherGen = *req.FatherGen
+	}
+	if req.BirthWeight != nil {
+		existingSheep.BirthWeight = *req.BirthWeight
 	}
 	if req.Gender != nil {
 		existingSheep.Gender = *req.Gender
 	}
 	if req.DateOfBirth != nil {
 		existingSheep.DateOfBirth = time.Time(*req.DateOfBirth)
-	}
-	// Handle nullable pointer to pointer for dates. If `nil` means no change, `&DateOnly(time.Time{})` means set to null.
-	if req.BreedingDate != nil {
-		if *req.BreedingDate == nil { // Explicitly set to null
-			existingSheep.BreedingDate = nil
-		} else {
-			t := time.Time(**req.BreedingDate)
-			existingSheep.BreedingDate = &t
-		}
 	}
 	if req.LastShearingDate != nil {
 		if *req.LastShearingDate == nil {
@@ -169,8 +175,9 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 		domainVaccinations := make([]domain.Vaccination, len(*req.Vaccinations))
 		for i, v := range *req.Vaccinations {
 			domainVaccinations[i] = domain.Vaccination{
-				VaccineID:   v.VaccineID,
 				Date:        time.Time(v.Date),
+				Vaccine:     v.Vaccine,
+				Vaccinator:  v.Vaccinator,
 				Description: v.Description,
 			}
 		}
@@ -180,11 +187,24 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 		domainTreatments := make([]domain.Treatment, len(*req.Treatments))
 		for i, t := range *req.Treatments {
 			domainTreatments[i] = domain.Treatment{
-				Date:        time.Time(t.Date),
-				Description: t.Description,
+				Date:               time.Time(t.Date),
+				DiseaseDescription: t.DiseaseDescription,
+				TreatDescription:   t.TreatDescription,
 			}
 		}
 		existingSheep.Treatments = domainTreatments
+	}
+	if req.Lambings != nil {
+		domainLambings := make([]domain.Lambing, len(*req.Lambings))
+		for i, l := range *req.Lambings {
+			domainLambings[i] = domain.Lambing{
+				Date:    time.Time(l.Date),
+				NumBorn: l.NumBorn,
+				Sexes:   l.Sexes,
+				NumDead: l.NumDead,
+			}
+		}
+		existingSheep.Lambings = domainLambings
 	}
 
 	if err := h.sheepService.UpdateSheep(r.Context(), existingSheep); err != nil {

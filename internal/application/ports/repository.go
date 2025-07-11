@@ -23,3 +23,10 @@ type VaccineRepository interface {
 	UpdateVaccine(ctx context.Context, vaccine *domain.Vaccine) error
 	DeleteVaccine(ctx context.Context, userID, vaccineID string) error
 }
+
+// VaccinationRepository defines operations for vaccination records.
+type VaccinationRepository interface {
+	CreateVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error
+	GetVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error)
+	DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error
+}
