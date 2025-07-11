@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -83,7 +84,24 @@ func (h *SheepHandler) GetAllSheep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sheepList, err := h.sheepService.GetAllSheep(r.Context(), userID)
+	var gender *string
+	if g := r.URL.Query().Get("gender"); g != "" {
+		gender = &g
+	}
+
+	var minAgeDaysPtr, maxAgeDaysPtr *int
+	if v := r.URL.Query().Get("minAgeDays"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			minAgeDaysPtr = &n
+		}
+	}
+	if v := r.URL.Query().Get("maxAgeDays"); v != "" {
+		if n, err := strconv.Atoi(v); err == nil {
+			maxAgeDaysPtr = &n
+		}
+	}
+
+	sheepList, err := h.sheepService.FilterSheep(r.Context(), userID, gender, minAgeDaysPtr, maxAgeDaysPtr)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -148,6 +166,12 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 	}
 	if req.Gender != nil {
 		existingSheep.Gender = *req.Gender
+	}
+	if req.ReproductionState != nil {
+		existingSheep.ReproductionState = *req.ReproductionState
+	}
+	if req.HealthState != nil {
+		existingSheep.HealthState = *req.HealthState
 	}
 	if req.DateOfBirth != nil {
 		existingSheep.DateOfBirth = time.Time(*req.DateOfBirth)

@@ -96,21 +96,23 @@ func (r *FirestoreRepository) UpdateSheep(ctx context.Context, sheep *domain.She
 	// Use Map to allow partial updates with firestore.Set(ctx, map, firestore.MergeAll)
 	// Or define custom struct for updates. For simplicity, we'll update all fields from the sheep struct.
 	updateMap := map[string]interface{}{
-		"earNumber1":       sheep.EarNumber1,
-		"earNumber2":       sheep.EarNumber2,
-		"earNumber3":       sheep.EarNumber3,
-		"neckNumber":       sheep.NeckNumber,
-		"fatherGen":        sheep.FatherGen,
-		"birthWeight":      sheep.BirthWeight,
-		"gender":           sheep.Gender,
-		"dateOfBirth":      sheep.DateOfBirth,
-		"lastShearingDate": sheep.LastShearingDate,
-		"lastHoofTrimDate": sheep.LastHoofTrimDate,
-		"photoUrl":         sheep.PhotoURL,
-		"lambings":         sheep.Lambings,
-		"vaccinations":     sheep.Vaccinations,
-		"treatments":       sheep.Treatments,
-		"updatedAt":        time.Now(),
+		"earNumber1":        sheep.EarNumber1,
+		"earNumber2":        sheep.EarNumber2,
+		"earNumber3":        sheep.EarNumber3,
+		"neckNumber":        sheep.NeckNumber,
+		"fatherGen":         sheep.FatherGen,
+		"birthWeight":       sheep.BirthWeight,
+		"gender":            sheep.Gender,
+		"reproductionState": sheep.ReproductionState,
+		"healthState":       sheep.HealthState,
+		"dateOfBirth":       sheep.DateOfBirth,
+		"lastShearingDate":  sheep.LastShearingDate,
+		"lastHoofTrimDate":  sheep.LastHoofTrimDate,
+		"photoUrl":          sheep.PhotoURL,
+		"lambings":          sheep.Lambings,
+		"vaccinations":      sheep.Vaccinations,
+		"treatments":        sheep.Treatments,
+		"updatedAt":         time.Now(),
 	}
 
 	_, err := r.getUserCollection(sheep.OwnerUserID, "sheep").Doc(sheep.ID).Set(ctx, updateMap, firestore.MergeAll)
