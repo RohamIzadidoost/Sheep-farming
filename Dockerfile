@@ -11,6 +11,8 @@ COPY ./sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json .
 COPY . .
 RUN go mod download
 
+
+
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o main ./cmd/api
 
 FROM alpine:3.19
@@ -24,6 +26,9 @@ COPY --from=builder /app/main .
 COPY .env .
 
 COPY ./sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json .
+
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json"
+
 
 EXPOSE 8080
 
