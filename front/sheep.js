@@ -17,11 +17,11 @@ function loadSheep() {
                 const tr = document.createElement('tr');
                 const age = new Date().getFullYear() - new Date(s.dateOfBirth).getFullYear();
                 tr.innerHTML = `
-                    <td>${s.name}</td>
+                    <td><a href="#" onclick="viewSheep('${s.id}')">${s.name}</a></td>
                     <td>${age}</td>
                     <td>${s.gender === 'male' ? 'نر' : 'ماده'}</td>
                     <td>${s.id}</td>
-                    <td>${s.breedingDate ? 'آبستن' : '-'}</td>
+                    <td>${s.reproductionState === 'pregnant' ? 'آبستن' : '-'}</td>
                     <td>
                         <button class="btn btn-sm btn-primary me-1" onclick="editSheep('${s.id}')"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="deleteSheep('${s.id}')"><i class="bi bi-trash"></i></button>
@@ -48,6 +48,24 @@ window.deleteSheep = function(id) {
     if (!confirm('حذف شود؟')) return;
     fetch(`${API_BASE}/sheep/${id}`, { method: 'DELETE', headers: headersSheep })
         .then(() => loadSheep());
+}
+
+window.viewSheep = function(id) {
+    fetch(`${API_BASE}/sheep/${id}`, { headers: headersSheep })
+        .then(res => res.json())
+        .then(s => {
+            const body = document.getElementById('detailBody');
+            body.innerHTML = `<div class="row">
+                <div class="col-md-4 text-center"><img src="${s.photoUrl || 'https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/svg/1f411.svg'}" class="img-fluid" style="max-height:150px"></div>
+                <div class="col-md-8">
+                    <p>شماره گوش: ${s.earNumber1}</p>
+                    <p>جنسیت: ${s.gender === 'male' ? 'نر' : 'ماده'}</p>
+                    <p>تاریخ تولد: ${s.dateOfBirth.split('T')[0]}</p>
+                    <p>وضعیت سلامت: ${s.healthState}</p>
+                </div>
+            </div>`;
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        });
 }
 
 form.addEventListener('submit', e => {

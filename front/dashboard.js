@@ -10,12 +10,28 @@ function loadStats() {
         .then(res => res.json())
         .then(data => {
             const total = data.length;
-            const pregnant = data.filter(s => s.breedingDate).length;
+            const now = new Date();
+            let birthsThisMonth = 0;
+            const pregnant = data.filter(s => s.reproductionState === 'pregnant').length;
+            data.forEach(s => {
+                (s.lambings || []).forEach(l => {
+                    const d = new Date(l.date);
+                    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
+                        birthsThisMonth += l.numBorn;
+                    }
+                });
+            });
+            const sick = data.filter(s => s.healthState === 'sick').length;
+            const treated = data.filter(s => s.healthState === 'under_treatment').length;
             const stats = [
                 { label: 'تعداد کل', value: total, icon: 'bi bi-emoji-smile' },
-                { label: 'آبستن', value: pregnant, icon: 'bi bi-heart-fill' }
+                { label: 'آبستن', value: pregnant, icon: 'bi bi-heart-fill' },
+                { label: 'تولد این ماه', value: birthsThisMonth, icon: 'bi bi-gift' },
+                { label: 'بیمار', value: sick, icon: 'bi bi-thermometer-half' },
+                { label: 'در حال درمان', value: treated, icon: 'bi bi-hospital' }
             ];
             const container = document.getElementById('statsCards');
+            container.innerHTML = '';
             stats.forEach(s => {
                 const div = document.createElement('div');
                 div.className = 'col-6 col-md-3';
@@ -36,6 +52,7 @@ function loadReminders() {
         .then(res => res.json())
         .then(data => {
             const container = document.getElementById('reminders');
+            container.innerHTML = '';
             if (!data.length) {
                 container.textContent = 'یادآوری برای نمایش وجود ندارد';
                 return;
