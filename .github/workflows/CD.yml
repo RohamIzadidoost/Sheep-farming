@@ -20,7 +20,8 @@ jobs:
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
       - name: Write FireBaseCred file
-        run: echo "${{ secrets.FIRE_BASE_CRED }}" > sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json
+        run: |
+          printf "%s" "${{ secrets.FIRE_BASE_CRED }}" > sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
