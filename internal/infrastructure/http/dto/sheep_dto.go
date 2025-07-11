@@ -6,38 +6,57 @@ import (
 )
 
 type VaccinationDTO struct {
-	VaccineID   string   `json:"vaccineId"`
 	Date        DateOnly `json:"date"`
+	Vaccine     string   `json:"vaccine"`
+	Vaccinator  string   `json:"vaccinator"`
 	Description string   `json:"description,omitempty"`
 }
 
+type LambingDTO struct {
+	Date    DateOnly `json:"date"`
+	NumBorn int      `json:"numBorn"`
+	Sexes   []string `json:"sexes"`
+	NumDead int      `json:"numDead"`
+}
+
 type TreatmentDTO struct {
-	Date        DateOnly `json:"date"`
-	Description string   `json:"description"`
+	Date               DateOnly `json:"date"`
+	DiseaseDescription string   `json:"diseaseDescription"`
+	TreatDescription   string   `json:"treatDescription"`
 }
 
 // CreateSheepRequest represents the data for creating a new sheep.
 type CreateSheepRequest struct {
-	Name             string           `json:"name"`
+	EarNumber1       string           `json:"earNumber1"`
+	EarNumber2       string           `json:"earNumber2,omitempty"`
+	EarNumber3       string           `json:"earNumber3,omitempty"`
+	NeckNumber       *string          `json:"neckNumber,omitempty"`
+	FatherGen        string           `json:"fatherGen,omitempty"`
+	BirthWeight      float64          `json:"birthWeight,omitempty"`
 	Gender           string           `json:"gender"`
 	DateOfBirth      DateOnly         `json:"dateOfBirth"`
-	BreedingDate     *DateOnly        `json:"breedingDate,omitempty"`
 	LastShearingDate *DateOnly        `json:"lastShearingDate,omitempty"`
 	LastHoofTrimDate *DateOnly        `json:"lastHoofTrimDate,omitempty"`
 	PhotoURL         string           `json:"photoUrl,omitempty"`
+	Lambings         []LambingDTO     `json:"lambings"`
 	Vaccinations     []VaccinationDTO `json:"vaccinations"`
 	Treatments       []TreatmentDTO   `json:"treatments"`
 }
 
 // UpdateSheepRequest represents the data for updating an existing sheep.
 type UpdateSheepRequest struct {
-	Name             *string           `json:"name,omitempty"` // Pointer for optional updates
+	EarNumber1       *string           `json:"earNumber1,omitempty"`
+	EarNumber2       *string           `json:"earNumber2,omitempty"`
+	EarNumber3       *string           `json:"earNumber3,omitempty"`
+	NeckNumber       **string          `json:"neckNumber,omitempty"`
+	FatherGen        *string           `json:"fatherGen,omitempty"`
+	BirthWeight      *float64          `json:"birthWeight,omitempty"`
 	Gender           *string           `json:"gender,omitempty"`
 	DateOfBirth      *DateOnly         `json:"dateOfBirth,omitempty"`
-	BreedingDate     **DateOnly        `json:"breedingDate,omitempty"` // Pointer to pointer to handle explicit null/empty date
 	LastShearingDate **DateOnly        `json:"lastShearingDate,omitempty"`
 	LastHoofTrimDate **DateOnly        `json:"lastHoofTrimDate,omitempty"`
 	PhotoURL         *string           `json:"photoUrl,omitempty"`
+	Lambings         *[]LambingDTO     `json:"lambings,omitempty"`
 	Vaccinations     *[]VaccinationDTO `json:"vaccinations,omitempty"`
 	Treatments       *[]TreatmentDTO   `json:"treatments,omitempty"`
 }
@@ -45,13 +64,18 @@ type UpdateSheepRequest struct {
 // SheepResponse represents the sheep data returned in API responses.
 type SheepResponse struct {
 	ID               string           `json:"id"`
-	Name             string           `json:"name"`
+	EarNumber1       string           `json:"earNumber1"`
+	EarNumber2       string           `json:"earNumber2,omitempty"`
+	EarNumber3       string           `json:"earNumber3,omitempty"`
+	NeckNumber       *string          `json:"neckNumber,omitempty"`
+	FatherGen        string           `json:"fatherGen,omitempty"`
+	BirthWeight      float64          `json:"birthWeight,omitempty"`
 	Gender           string           `json:"gender"`
 	DateOfBirth      DateOnly         `json:"dateOfBirth"`
-	BreedingDate     *DateOnly        `json:"breedingDate,omitempty"`
 	LastShearingDate *DateOnly        `json:"lastShearingDate,omitempty"`
 	LastHoofTrimDate *DateOnly        `json:"lastHoofTrimDate,omitempty"`
 	PhotoURL         string           `json:"photoUrl,omitempty"`
+	Lambings         []LambingDTO     `json:"lambings"`
 	Vaccinations     []VaccinationDTO `json:"vaccinations"`
 	Treatments       []TreatmentDTO   `json:"treatments"`
 	CreatedAt        time.Time        `json:"createdAt"`
@@ -63,8 +87,9 @@ func (req *CreateSheepRequest) ToDomain(ownerUserID string) *domain.Sheep {
 	domainVaccinations := make([]domain.Vaccination, len(req.Vaccinations))
 	for i, v := range req.Vaccinations {
 		domainVaccinations[i] = domain.Vaccination{
-			VaccineID:   v.VaccineID,
 			Date:        time.Time(v.Date),
+			Vaccine:     v.Vaccine,
+			Vaccinator:  v.Vaccinator,
 			Description: v.Description,
 		}
 	}
@@ -72,14 +97,20 @@ func (req *CreateSheepRequest) ToDomain(ownerUserID string) *domain.Sheep {
 	domainTreatments := make([]domain.Treatment, len(req.Treatments))
 	for i, t := range req.Treatments {
 		domainTreatments[i] = domain.Treatment{
-			Date:        time.Time(t.Date),
-			Description: t.Description,
+			Date:               time.Time(t.Date),
+			DiseaseDescription: t.DiseaseDescription,
+			TreatDescription:   t.TreatDescription,
 		}
 	}
 
-	var breedingDate *time.Time
-	if req.BreedingDate != nil {
-		breedingDate = req.BreedingDate.ToTimePtr()
+	domainLambings := make([]domain.Lambing, len(req.Lambings))
+	for i, l := range req.Lambings {
+		domainLambings[i] = domain.Lambing{
+			Date:    time.Time(l.Date),
+			NumBorn: l.NumBorn,
+			Sexes:   l.Sexes,
+			NumDead: l.NumDead,
+		}
 	}
 
 	var lastShearingDate *time.Time
@@ -93,13 +124,18 @@ func (req *CreateSheepRequest) ToDomain(ownerUserID string) *domain.Sheep {
 	}
 
 	return &domain.Sheep{
-		Name:             req.Name,
+		EarNumber1:       req.EarNumber1,
+		EarNumber2:       req.EarNumber2,
+		EarNumber3:       req.EarNumber3,
+		NeckNumber:       req.NeckNumber,
+		FatherGen:        req.FatherGen,
+		BirthWeight:      req.BirthWeight,
 		Gender:           req.Gender,
 		DateOfBirth:      time.Time(req.DateOfBirth),
-		BreedingDate:     breedingDate,
 		LastShearingDate: lastShearingDate,
 		LastHoofTrimDate: lastHoofTrimDate,
 		PhotoURL:         req.PhotoURL,
+		Lambings:         domainLambings,
 		Vaccinations:     domainVaccinations,
 		Treatments:       domainTreatments,
 		OwnerUserID:      ownerUserID,
@@ -111,8 +147,9 @@ func ToSheepResponse(s *domain.Sheep) *SheepResponse {
 	responseVaccinations := make([]VaccinationDTO, len(s.Vaccinations))
 	for i, v := range s.Vaccinations {
 		responseVaccinations[i] = VaccinationDTO{
-			VaccineID:   v.VaccineID,
 			Date:        DateOnly(v.Date),
+			Vaccine:     v.Vaccine,
+			Vaccinator:  v.Vaccinator,
 			Description: v.Description,
 		}
 	}
@@ -120,20 +157,36 @@ func ToSheepResponse(s *domain.Sheep) *SheepResponse {
 	responseTreatments := make([]TreatmentDTO, len(s.Treatments))
 	for i, t := range s.Treatments {
 		responseTreatments[i] = TreatmentDTO{
-			Date:        DateOnly(t.Date),
-			Description: t.Description,
+			Date:               DateOnly(t.Date),
+			DiseaseDescription: t.DiseaseDescription,
+			TreatDescription:   t.TreatDescription,
+		}
+	}
+
+	responseLambings := make([]LambingDTO, len(s.Lambings))
+	for i, l := range s.Lambings {
+		responseLambings[i] = LambingDTO{
+			Date:    DateOnly(l.Date),
+			NumBorn: l.NumBorn,
+			Sexes:   l.Sexes,
+			NumDead: l.NumDead,
 		}
 	}
 
 	return &SheepResponse{
 		ID:               s.ID,
-		Name:             s.Name,
+		EarNumber1:       s.EarNumber1,
+		EarNumber2:       s.EarNumber2,
+		EarNumber3:       s.EarNumber3,
+		NeckNumber:       s.NeckNumber,
+		FatherGen:        s.FatherGen,
+		BirthWeight:      s.BirthWeight,
 		Gender:           s.Gender,
 		DateOfBirth:      DateOnly(s.DateOfBirth),
-		BreedingDate:     FromTimePtrPtr(s.BreedingDate),
 		LastShearingDate: FromTimePtrPtr(s.LastShearingDate),
 		LastHoofTrimDate: FromTimePtrPtr(s.LastHoofTrimDate),
 		PhotoURL:         s.PhotoURL,
+		Lambings:         responseLambings,
 		Vaccinations:     responseVaccinations,
 		Treatments:       responseTreatments,
 		CreatedAt:        s.CreatedAt,

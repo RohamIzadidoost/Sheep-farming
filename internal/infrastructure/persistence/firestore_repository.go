@@ -17,6 +17,7 @@ import (
 // Ensure FirestoreRepository implements the ports interfaces
 var _ ports.SheepRepository = &FirestoreRepository{}
 var _ ports.VaccineRepository = &FirestoreRepository{}
+var _ ports.VaccinationRepository = &FirestoreRepository{}
 
 // FirestoreRepository implements the SheepRepository and VaccineRepository interfaces using Firestore.
 type FirestoreRepository struct {
@@ -95,13 +96,18 @@ func (r *FirestoreRepository) UpdateSheep(ctx context.Context, sheep *domain.She
 	// Use Map to allow partial updates with firestore.Set(ctx, map, firestore.MergeAll)
 	// Or define custom struct for updates. For simplicity, we'll update all fields from the sheep struct.
 	updateMap := map[string]interface{}{
-		"name":             sheep.Name,
+		"earNumber1":       sheep.EarNumber1,
+		"earNumber2":       sheep.EarNumber2,
+		"earNumber3":       sheep.EarNumber3,
+		"neckNumber":       sheep.NeckNumber,
+		"fatherGen":        sheep.FatherGen,
+		"birthWeight":      sheep.BirthWeight,
 		"gender":           sheep.Gender,
 		"dateOfBirth":      sheep.DateOfBirth,
-		"breedingDate":     sheep.BreedingDate,
 		"lastShearingDate": sheep.LastShearingDate,
 		"lastHoofTrimDate": sheep.LastHoofTrimDate,
 		"photoUrl":         sheep.PhotoURL,
+		"lambings":         sheep.Lambings,
 		"vaccinations":     sheep.Vaccinations,
 		"treatments":       sheep.Treatments,
 		"updatedAt":        time.Now(),
@@ -198,4 +204,56 @@ func (r *FirestoreRepository) DeleteVaccine(ctx context.Context, userID, vaccine
 		return fmt.Errorf("failed to delete vaccine from Firestore: %w", err)
 	}
 	return nil
+}
+
+// CreateVaccination implements ports.VaccinationRepository
+func (r *FirestoreRepository) CreateVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error {
+	_, _, err := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("vaccinations").Add(ctx, v)
+	if err != nil {
+		return fmt.Errorf("failed to create vaccination in Firestore: %w", err)
+	}
+	return nil
+}
+
+// GetVaccinations implements ports.VaccinationRepository
+func (r *FirestoreRepository) GetVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error) {
+	iter := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("vaccinations").Documents(ctx)
+	var list []domain.Vaccination
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to iterate vaccinations: %w", err)
+		}
+		var v domain.Vaccination
+		if err := doc.DataTo(&v); err != nil {
+			return nil, fmt.Errorf("failed to decode vaccination: %w", err)
+		}
+		list = append(list, v)
+	}
+	return list, nil
+}
+
+// DeleteVaccination implements ports.VaccinationRepository. The index corresponds to order returned by GetVaccinations.
+func (r *FirestoreRepository) DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error {
+	// Retrieve documents to find the one at given index
+	iter := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("vaccinations").Documents(ctx)
+	i := 0
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to iterate vaccinations: %w", err)
+		}
+		if i == index {
+			_, err := doc.Ref.Delete(ctx)
+			return err
+		}
+		i++
+	}
+	return fmt.Errorf("vaccination index not found")
 }
