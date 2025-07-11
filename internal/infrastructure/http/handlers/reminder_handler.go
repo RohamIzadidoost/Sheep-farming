@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/infrastructure/http/middleware"
@@ -19,19 +20,18 @@ func NewReminderHandler(reminderService *services.ReminderService) *ReminderHand
 }
 
 // GetReminders calculates reminders for the authenticated user.
-func (h *ReminderHandler) GetReminders(w http.ResponseWriter, r *http.Request) {
-	userID, err := middleware.GetUserIDFromContext(r.Context())
+func (h *ReminderHandler) GetReminders(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	reminders, err := h.reminderService.CalculateAndSendReminders(r.Context(), userID)
+	reminders, err := h.reminderService.CalculateAndSendReminders(c.Request.Context(), userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(reminders)
+	c.JSON(http.StatusOK, reminders)
 }

@@ -1,10 +1,9 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/domain"
@@ -23,68 +22,64 @@ func NewVaccineHandler(vaccineService *services.VaccineService) *VaccineHandler 
 }
 
 // CreateVaccine handles POST /vaccines requests.
-func (h *VaccineHandler) CreateVaccine(w http.ResponseWriter, r *http.Request) {
+func (h *VaccineHandler) CreateVaccine(c *gin.Context) {
 	var req dto.CreateVaccineRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": domain.ErrInvalidInput.Error()})
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	vaccine := req.ToDomain(userID)
-	if err := h.vaccineService.CreateVaccine(r.Context(), vaccine); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := h.vaccineService.CreateVaccine(c.Request.Context(), vaccine); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	resp := dto.ToVaccineResponse(vaccine)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(resp)
+	c.JSON(http.StatusCreated, resp)
 }
 
 // GetVaccineByID handles GET /vaccines/{id} requests.
-func (h *VaccineHandler) GetVaccineByID(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	vaccineID := vars["id"]
+func (h *VaccineHandler) GetVaccineByID(c *gin.Context) {
+	vaccineID := c.Param("id")
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	vaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, vaccineID)
+	vaccine, err := h.vaccineService.GetVaccineByID(c.Request.Context(), userID, vaccineID)
 	if err != nil {
 		if err == domain.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	resp := dto.ToVaccineResponse(vaccine)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // GetAllVaccines handles GET /vaccines requests.
-func (h *VaccineHandler) GetAllVaccines(w http.ResponseWriter, r *http.Request) {
-	userID, err := middleware.GetUserIDFromContext(r.Context())
+func (h *VaccineHandler) GetAllVaccines(c *gin.Context) {
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	vaccineList, err := h.vaccineService.GetAllVaccines(r.Context(), userID)
+	vaccineList, err := h.vaccineService.GetAllVaccines(c.Request.Context(), userID)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -93,34 +88,32 @@ func (h *VaccineHandler) GetAllVaccines(w http.ResponseWriter, r *http.Request) 
 		responses = append(responses, *dto.ToVaccineResponse(&vaccine))
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(responses)
+	c.JSON(http.StatusOK, responses)
 }
 
 // UpdateVaccine handles PUT /vaccines/{id} requests.
-func (h *VaccineHandler) UpdateVaccine(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	vaccineID := vars["id"]
+func (h *VaccineHandler) UpdateVaccine(c *gin.Context) {
+	vaccineID := c.Param("id")
 
 	var req dto.UpdateVaccineRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": domain.ErrInvalidInput.Error()})
 		return
 	}
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	existingVaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, vaccineID)
+	existingVaccine, err := h.vaccineService.GetVaccineByID(c.Request.Context(), userID, vaccineID)
 	if err != nil {
 		if err == domain.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -131,35 +124,33 @@ func (h *VaccineHandler) UpdateVaccine(w http.ResponseWriter, r *http.Request) {
 		existingVaccine.IntervalMonths = *req.IntervalMonths
 	}
 
-	if err := h.vaccineService.UpdateVaccine(r.Context(), existingVaccine); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if err := h.vaccineService.UpdateVaccine(c.Request.Context(), existingVaccine); err != nil {
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	resp := dto.ToVaccineResponse(existingVaccine)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	c.JSON(http.StatusOK, resp)
 }
 
 // DeleteVaccine handles DELETE /vaccines/{id} requests.
-func (h *VaccineHandler) DeleteVaccine(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	vaccineID := vars["id"]
+func (h *VaccineHandler) DeleteVaccine(c *gin.Context) {
+	vaccineID := c.Param("id")
 
-	userID, err := middleware.GetUserIDFromContext(r.Context())
+	userID, err := middleware.GetUserIDFromContext(c)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := h.vaccineService.DeleteVaccine(r.Context(), userID, vaccineID); err != nil {
+	if err := h.vaccineService.DeleteVaccine(c.Request.Context(), userID, vaccineID); err != nil {
 		if err == domain.ErrNotFound {
-			http.Error(w, err.Error(), http.StatusNotFound)
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusNoContent) // 204 No Content
+	c.Status(http.StatusNoContent)
 }
