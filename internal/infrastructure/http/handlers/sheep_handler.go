@@ -263,3 +263,107 @@ func (h *SheepHandler) DeleteSheep(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent) // 204 No Content
 }
+
+// AddVaccination handles POST /sheep/{id}/vaccinations requests.
+func (h *SheepHandler) AddVaccination(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+
+	var req dto.VaccinationDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	err = h.sheepService.AddVaccination(r.Context(), userID, sheepID, domain.Vaccination{
+		Date:        time.Time(req.Date),
+		Vaccine:     req.Vaccine,
+		Vaccinator:  req.Vaccinator,
+		Description: req.Description,
+	})
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// AddTreatment handles POST /sheep/{id}/treatments requests.
+func (h *SheepHandler) AddTreatment(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+
+	var req dto.TreatmentDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	err = h.sheepService.AddTreatment(r.Context(), userID, sheepID, domain.Treatment{
+		Date:               time.Time(req.Date),
+		DiseaseDescription: req.DiseaseDescription,
+		TreatDescription:   req.TreatDescription,
+	})
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+// AddLambing handles POST /sheep/{id}/lambings requests.
+func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	sheepID := vars["id"]
+
+	var req dto.LambingDTO
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, err := middleware.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	err = h.sheepService.AddLambing(r.Context(), userID, sheepID, domain.Lambing{
+		Date:    time.Time(req.Date),
+		NumBorn: req.NumBorn,
+		Sexes:   req.Sexes,
+		NumDead: req.NumDead,
+	})
+	if err != nil {
+		if err == domain.ErrNotFound {
+			http.Error(w, err.Error(), http.StatusNotFound)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
