@@ -2,55 +2,51 @@ package http
 
 import (
 	"log"
-	"net/http"
-	"time"
 
-	"github.com/gorilla/mux"
-	"github.com/rs/cors" // CORS middleware
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 
-	"sheep_farm_backend_go/internal/application/ports" // Import ports for auth service
+	"sheep_farm_backend_go/internal/application/ports"
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/infrastructure/http/handlers"
-	"sheep_farm_backend_go/internal/infrastructure/http/middleware" // New middleware
+	"sheep_farm_backend_go/internal/infrastructure/http/middleware"
 )
 
 // Server represents the HTTP server.
 type Server struct {
-	Router          *mux.Router
+	Engine          *gin.Engine
 	SheepHandler    *handlers.SheepHandler
 	VaccineHandler  *handlers.VaccineHandler
 	ReminderHandler *handlers.ReminderHandler
-	AuthHandler     *handlers.AuthHandler      // New: Auth handler
-	AuthMiddleware  *middleware.AuthMiddleware // New: Auth middleware
+	AuthHandler     *handlers.AuthHandler
+	AuthMiddleware  *middleware.AuthMiddleware
 }
 
 // NewServer creates a new HTTP server instance.
 func NewServer(
 	sheepService *services.SheepService,
 	vaccineService *services.VaccineService,
-	authService ports.AuthService, // New: Auth service
-	userService *services.UserService, // New: User service for AuthHandler
+	authService ports.AuthService,
+	userService *services.UserService,
 	reminderService *services.ReminderService,
 ) *Server {
-
-	authHandler := handlers.NewAuthHandler(authService, userService) // Pass user service
+	authHandler := handlers.NewAuthHandler(authService, userService)
 	authMiddleware := middleware.NewAuthMiddleware(authService)
 
-	// User ID will now be dynamically extracted from JWT in AuthMiddleware
-	// The fixedUserID passed to Sheep/Vaccine handlers is for demonstration before auth is fully implemented for every route.
-	// In production, SheepHandler and VaccineHandler would get user ID from context via middleware.
 	sheepHandler := handlers.NewSheepHandler(sheepService)
 	vaccineHandler := handlers.NewVaccineHandler(vaccineService)
 	reminderHandler := handlers.NewReminderHandler(reminderService)
 
-	router := mux.NewRouter()
+	engine := gin.New()
+	engine.Use(gin.Logger(), gin.Recovery())
+
 	s := &Server{
-		Router:          router,
+		Engine:          engine,
 		SheepHandler:    sheepHandler,
 		VaccineHandler:  vaccineHandler,
 		ReminderHandler: reminderHandler,
-		AuthHandler:     authHandler,    // New
-		AuthMiddleware:  authMiddleware, // New
+		AuthHandler:     authHandler,
+		AuthMiddleware:  authMiddleware,
 	}
 	s.setupRoutes()
 	return s
@@ -58,60 +54,45 @@ func NewServer(
 
 // setupRoutes defines all HTTP API endpoints.
 func (s *Server) setupRoutes() {
-	apiRouter := s.Router.PathPrefix("/api/v1").Subrouter()
+	api := s.Engine.Group("/api/v1")
 
-	// Public Auth Routes (no authentication required)
-	apiRouter.HandleFunc("/register", s.AuthHandler.Register).Methods("POST")
-	apiRouter.HandleFunc("/login", s.AuthHandler.Login).Methods("POST")
+	// Public Auth Routes
+	api.POST("/register", s.AuthHandler.Register)
+	api.POST("/login", s.AuthHandler.Login)
 
-	// Protected Routes (authentication required)
-	protectedRouter := apiRouter.PathPrefix("/").Subrouter()
-	protectedRouter.Use(s.AuthMiddleware.Authenticate) // Apply authentication middleware to all routes below
+	// Protected routes
+	protected := api.Group("/")
+	protected.Use(s.AuthMiddleware.Authenticate())
 
-	// Sheep Routes (now protected)
-	protectedRouter.HandleFunc("/sheep", s.SheepHandler.CreateSheep).Methods("POST")
-	protectedRouter.HandleFunc("/sheep", s.SheepHandler.GetAllSheep).Methods("GET")
-	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.GetSheepByID).Methods("GET")
-	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.UpdateSheep).Methods("PUT")
-	protectedRouter.HandleFunc("/sheep/{id}", s.SheepHandler.DeleteSheep).Methods("DELETE")
+	protected.POST("/sheep", s.SheepHandler.CreateSheep)
+	protected.GET("/sheep", s.SheepHandler.GetAllSheep)
+	protected.GET("/sheep/:id", s.SheepHandler.GetSheepByID)
+	protected.PUT("/sheep/:id", s.SheepHandler.UpdateSheep)
+	protected.DELETE("/sheep/:id", s.SheepHandler.DeleteSheep)
 
-	// Reminder Route
-	protectedRouter.HandleFunc("/reminders", s.ReminderHandler.GetReminders).Methods("GET")
+	protected.GET("/reminders", s.ReminderHandler.GetReminders)
 
-	// Vaccine Routes (now protected)
-	protectedRouter.HandleFunc("/vaccines", s.VaccineHandler.CreateVaccine).Methods("POST")
-	protectedRouter.HandleFunc("/vaccines", s.VaccineHandler.GetAllVaccines).Methods("GET")
-	protectedRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.GetVaccineByID).Methods("GET")
-	protectedRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.UpdateVaccine).Methods("PUT")
-	protectedRouter.HandleFunc("/vaccines/{id}", s.VaccineHandler.DeleteVaccine).Methods("DELETE")
+	protected.POST("/vaccines", s.VaccineHandler.CreateVaccine)
+	protected.GET("/vaccines", s.VaccineHandler.GetAllVaccines)
+	protected.GET("/vaccines/:id", s.VaccineHandler.GetVaccineByID)
+	protected.PUT("/vaccines/:id", s.VaccineHandler.UpdateVaccine)
+	protected.DELETE("/vaccines/:id", s.VaccineHandler.DeleteVaccine)
 
-	// Root endpoint for health check
-	s.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Sheep Farm API is running!"))
+	s.Engine.GET("/", func(c *gin.Context) {
+		c.String(200, "Sheep Farm API is running!")
 	})
 }
 
 // Start runs the HTTP server.
 func (s *Server) Start(addr string) {
-	// Configure CORS
-	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://[::]:5500"}, // Allow your React app
-		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Authorization header is now important!
+	c := cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://[::]:5500"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
-		Debug:            false, // Set to true for debugging CORS issues
 	})
-
-	handler := c.Handler(s.Router)
+	s.Engine.Use(c)
 
 	log.Printf("Server starting on %s", addr)
-	srv := &http.Server{
-		Addr:         addr,
-		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
-	}
-
-	log.Fatal(srv.ListenAndServe())
+	s.Engine.Run(addr)
 }

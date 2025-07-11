@@ -1,8 +1,9 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 
 	"sheep_farm_backend_go/internal/application/ports"
 	"sheep_farm_backend_go/internal/application/services"
@@ -22,29 +23,29 @@ func NewAuthHandler(authService ports.AuthService, userService *services.UserSer
 }
 
 // Register handles POST /register requests.
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Register(c *gin.Context) {
 	var req dto.RegisterRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": domain.ErrInvalidInput.Error()})
 		return
 	}
 
-	user, err := h.authService.Register(r.Context(), req.Email, req.Password)
+	user, err := h.authService.Register(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		if err == domain.ErrEmailAlreadyExists {
-			http.Error(w, err.Error(), http.StatusConflict) // 409 Conflict
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Optionally log in the user immediately after registration
-	token, err := h.authService.Login(r.Context(), req.Email, req.Password)
+	token, err := h.authService.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		// Log the error but don't fail registration just because auto-login failed
 		// In production, might return 201 Created without token and require separate login
-		http.Error(w, domain.ErrInternal.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": domain.ErrInternal.Error()})
 		return
 	}
 
@@ -54,33 +55,31 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		Role:   user.Role,
 		Token:  token,
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(resp)
+	c.JSON(http.StatusCreated, resp)
 }
 
 // Login handles POST /login requests.
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *AuthHandler) Login(c *gin.Context) {
 	var req dto.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": domain.ErrInvalidInput.Error()})
 		return
 	}
 
-	token, err := h.authService.Login(r.Context(), req.Email, req.Password)
+	token, err := h.authService.Login(c.Request.Context(), req.Email, req.Password)
 	if err != nil {
 		if err == domain.ErrInvalidCredentials {
-			http.Error(w, err.Error(), http.StatusUnauthorized) // 401 Unauthorized
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Get user details to return in response
-	user, err := h.userService.GetUserByEmail(r.Context(), req.Email)
+	user, err := h.userService.GetUserByEmail(c.Request.Context(), req.Email)
 	if err != nil {
-		http.Error(w, domain.ErrInternal.Error(), http.StatusInternalServerError) // Should not happen if Login succeeded
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": domain.ErrInternal.Error()})
 		return
 	}
 
@@ -90,6 +89,5 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Role:   user.Role,
 		Token:  token,
 	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	c.JSON(http.StatusOK, resp)
 }

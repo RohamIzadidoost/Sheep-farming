@@ -1,9 +1,10 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 
 	"sheep_farm_backend_go/internal/application/ports"
 	"sheep_farm_backend_go/internal/domain"
@@ -28,53 +29,59 @@ func NewAuthMiddleware(authService ports.AuthService) *AuthMiddleware {
 }
 
 // Authenticate is the middleware function to validate JWT tokens.
-func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
+func (m *AuthMiddleware) Authenticate() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			http.Error(w, domain.ErrUnauthorized.Error(), http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": domain.ErrUnauthorized.Error()})
 			return
 		}
 
-		// Expected format: "Bearer <token>"
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || strings.ToLower(parts[0]) != "bearer" {
-			http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"error": domain.ErrInvalidInput.Error()})
 			return
 		}
 
 		tokenString := parts[1]
-		user, err := m.authService.ValidateToken(r.Context(), tokenString)
+		user, err := m.authService.ValidateToken(c.Request.Context(), tokenString)
 		if err != nil {
 			if err == domain.ErrInvalidToken {
-				http.Error(w, domain.ErrInvalidToken.Error(), http.StatusUnauthorized)
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": domain.ErrInvalidToken.Error()})
 				return
 			}
-			http.Error(w, domain.ErrInternal.Error(), http.StatusInternalServerError)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": domain.ErrInternal.Error()})
 			return
 		}
 
-		// Store user ID and Role in the request context
-		ctx := context.WithValue(r.Context(), UserIDContextKey, user.ID)
-		ctx = context.WithValue(ctx, UserRoleContextKey, user.Role) // Store user role
-		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+		c.Set(string(UserIDContextKey), user.ID)
+		c.Set(string(UserRoleContextKey), user.Role)
+		c.Next()
+	}
 }
 
 // GetUserIDFromContext extracts the user ID from the request context.
-func GetUserIDFromContext(ctx context.Context) (string, error) {
-	userID, ok := ctx.Value(UserIDContextKey).(string)
+func GetUserIDFromContext(c *gin.Context) (string, error) {
+	val, exists := c.Get(string(UserIDContextKey))
+	if !exists {
+		return "", domain.ErrUnauthorized
+	}
+	userID, ok := val.(string)
 	if !ok || userID == "" {
-		return "", domain.ErrUnauthorized // User ID not found in context
+		return "", domain.ErrUnauthorized
 	}
 	return userID, nil
 }
 
 // GetUserRoleFromContext extracts the user role from the request context.
-func GetUserRoleFromContext(ctx context.Context) (domain.UserRole, error) {
-	userRole, ok := ctx.Value(UserRoleContextKey).(domain.UserRole)
-	if !ok || userRole == "" {
-		return "", domain.ErrUnauthorized // User Role not found in context
+func GetUserRoleFromContext(c *gin.Context) (domain.UserRole, error) {
+	val, exists := c.Get(string(UserRoleContextKey))
+	if !exists {
+		return "", domain.ErrUnauthorized
 	}
-	return userRole, nil
+	role, ok := val.(domain.UserRole)
+	if !ok || role == "" {
+		return "", domain.ErrUnauthorized
+	}
+	return role, nil
 }
