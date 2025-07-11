@@ -27,59 +27,65 @@ type TreatmentDTO struct {
 
 // CreateSheepRequest represents the data for creating a new sheep.
 type CreateSheepRequest struct {
-	EarNumber1       string           `json:"earNumber1"`
-	EarNumber2       string           `json:"earNumber2,omitempty"`
-	EarNumber3       string           `json:"earNumber3,omitempty"`
-	NeckNumber       *string          `json:"neckNumber,omitempty"`
-	FatherGen        string           `json:"fatherGen,omitempty"`
-	BirthWeight      float64          `json:"birthWeight,omitempty"`
-	Gender           string           `json:"gender"`
-	DateOfBirth      DateOnly         `json:"dateOfBirth"`
-	LastShearingDate *DateOnly        `json:"lastShearingDate,omitempty"`
-	LastHoofTrimDate *DateOnly        `json:"lastHoofTrimDate,omitempty"`
-	PhotoURL         string           `json:"photoUrl,omitempty"`
-	Lambings         []LambingDTO     `json:"lambings"`
-	Vaccinations     []VaccinationDTO `json:"vaccinations"`
-	Treatments       []TreatmentDTO   `json:"treatments"`
+	EarNumber1        string           `json:"earNumber1"`
+	EarNumber2        string           `json:"earNumber2,omitempty"`
+	EarNumber3        string           `json:"earNumber3,omitempty"`
+	NeckNumber        *string          `json:"neckNumber,omitempty"`
+	FatherGen         string           `json:"fatherGen,omitempty"`
+	BirthWeight       float64          `json:"birthWeight,omitempty"`
+	Gender            string           `json:"gender"`
+	ReproductionState string           `json:"reproductionState"`
+	HealthState       string           `json:"healthState"`
+	DateOfBirth       DateOnly         `json:"dateOfBirth"`
+	LastShearingDate  *DateOnly        `json:"lastShearingDate,omitempty"`
+	LastHoofTrimDate  *DateOnly        `json:"lastHoofTrimDate,omitempty"`
+	PhotoURL          string           `json:"photoUrl,omitempty"`
+	Lambings          []LambingDTO     `json:"lambings"`
+	Vaccinations      []VaccinationDTO `json:"vaccinations"`
+	Treatments        []TreatmentDTO   `json:"treatments"`
 }
 
 // UpdateSheepRequest represents the data for updating an existing sheep.
 type UpdateSheepRequest struct {
-	EarNumber1       *string           `json:"earNumber1,omitempty"`
-	EarNumber2       *string           `json:"earNumber2,omitempty"`
-	EarNumber3       *string           `json:"earNumber3,omitempty"`
-	NeckNumber       **string          `json:"neckNumber,omitempty"`
-	FatherGen        *string           `json:"fatherGen,omitempty"`
-	BirthWeight      *float64          `json:"birthWeight,omitempty"`
-	Gender           *string           `json:"gender,omitempty"`
-	DateOfBirth      *DateOnly         `json:"dateOfBirth,omitempty"`
-	LastShearingDate **DateOnly        `json:"lastShearingDate,omitempty"`
-	LastHoofTrimDate **DateOnly        `json:"lastHoofTrimDate,omitempty"`
-	PhotoURL         *string           `json:"photoUrl,omitempty"`
-	Lambings         *[]LambingDTO     `json:"lambings,omitempty"`
-	Vaccinations     *[]VaccinationDTO `json:"vaccinations,omitempty"`
-	Treatments       *[]TreatmentDTO   `json:"treatments,omitempty"`
+	EarNumber1        *string           `json:"earNumber1,omitempty"`
+	EarNumber2        *string           `json:"earNumber2,omitempty"`
+	EarNumber3        *string           `json:"earNumber3,omitempty"`
+	NeckNumber        **string          `json:"neckNumber,omitempty"`
+	FatherGen         *string           `json:"fatherGen,omitempty"`
+	BirthWeight       *float64          `json:"birthWeight,omitempty"`
+	Gender            *string           `json:"gender,omitempty"`
+	ReproductionState *string           `json:"reproductionState,omitempty"`
+	HealthState       *string           `json:"healthState,omitempty"`
+	DateOfBirth       *DateOnly         `json:"dateOfBirth,omitempty"`
+	LastShearingDate  **DateOnly        `json:"lastShearingDate,omitempty"`
+	LastHoofTrimDate  **DateOnly        `json:"lastHoofTrimDate,omitempty"`
+	PhotoURL          *string           `json:"photoUrl,omitempty"`
+	Lambings          *[]LambingDTO     `json:"lambings,omitempty"`
+	Vaccinations      *[]VaccinationDTO `json:"vaccinations,omitempty"`
+	Treatments        *[]TreatmentDTO   `json:"treatments,omitempty"`
 }
 
 // SheepResponse represents the sheep data returned in API responses.
 type SheepResponse struct {
-	ID               string           `json:"id"`
-	EarNumber1       string           `json:"earNumber1"`
-	EarNumber2       string           `json:"earNumber2,omitempty"`
-	EarNumber3       string           `json:"earNumber3,omitempty"`
-	NeckNumber       *string          `json:"neckNumber,omitempty"`
-	FatherGen        string           `json:"fatherGen,omitempty"`
-	BirthWeight      float64          `json:"birthWeight,omitempty"`
-	Gender           string           `json:"gender"`
-	DateOfBirth      DateOnly         `json:"dateOfBirth"`
-	LastShearingDate *DateOnly        `json:"lastShearingDate,omitempty"`
-	LastHoofTrimDate *DateOnly        `json:"lastHoofTrimDate,omitempty"`
-	PhotoURL         string           `json:"photoUrl,omitempty"`
-	Lambings         []LambingDTO     `json:"lambings"`
-	Vaccinations     []VaccinationDTO `json:"vaccinations"`
-	Treatments       []TreatmentDTO   `json:"treatments"`
-	CreatedAt        time.Time        `json:"createdAt"`
-	UpdatedAt        time.Time        `json:"updatedAt"`
+	ID                string           `json:"id"`
+	EarNumber1        string           `json:"earNumber1"`
+	EarNumber2        string           `json:"earNumber2,omitempty"`
+	EarNumber3        string           `json:"earNumber3,omitempty"`
+	NeckNumber        *string          `json:"neckNumber,omitempty"`
+	FatherGen         string           `json:"fatherGen,omitempty"`
+	BirthWeight       float64          `json:"birthWeight,omitempty"`
+	Gender            string           `json:"gender"`
+	ReproductionState string           `json:"reproductionState"`
+	HealthState       string           `json:"healthState"`
+	DateOfBirth       DateOnly         `json:"dateOfBirth"`
+	LastShearingDate  *DateOnly        `json:"lastShearingDate,omitempty"`
+	LastHoofTrimDate  *DateOnly        `json:"lastHoofTrimDate,omitempty"`
+	PhotoURL          string           `json:"photoUrl,omitempty"`
+	Lambings          []LambingDTO     `json:"lambings"`
+	Vaccinations      []VaccinationDTO `json:"vaccinations"`
+	Treatments        []TreatmentDTO   `json:"treatments"`
+	CreatedAt         time.Time        `json:"createdAt"`
+	UpdatedAt         time.Time        `json:"updatedAt"`
 }
 
 // ToDomain converts CreateSheepRequest to domain.Sheep
@@ -123,22 +129,31 @@ func (req *CreateSheepRequest) ToDomain(ownerUserID string) *domain.Sheep {
 		lastHoofTrimDate = req.LastHoofTrimDate.ToTimePtr()
 	}
 
+	if req.ReproductionState == "" {
+		req.ReproductionState = domain.ReproductionNormal
+	}
+	if req.HealthState == "" {
+		req.HealthState = domain.HealthHealthy
+	}
+
 	return &domain.Sheep{
-		EarNumber1:       req.EarNumber1,
-		EarNumber2:       req.EarNumber2,
-		EarNumber3:       req.EarNumber3,
-		NeckNumber:       req.NeckNumber,
-		FatherGen:        req.FatherGen,
-		BirthWeight:      req.BirthWeight,
-		Gender:           req.Gender,
-		DateOfBirth:      time.Time(req.DateOfBirth),
-		LastShearingDate: lastShearingDate,
-		LastHoofTrimDate: lastHoofTrimDate,
-		PhotoURL:         req.PhotoURL,
-		Lambings:         domainLambings,
-		Vaccinations:     domainVaccinations,
-		Treatments:       domainTreatments,
-		OwnerUserID:      ownerUserID,
+		EarNumber1:        req.EarNumber1,
+		EarNumber2:        req.EarNumber2,
+		EarNumber3:        req.EarNumber3,
+		NeckNumber:        req.NeckNumber,
+		FatherGen:         req.FatherGen,
+		BirthWeight:       req.BirthWeight,
+		Gender:            req.Gender,
+		ReproductionState: req.ReproductionState,
+		HealthState:       req.HealthState,
+		DateOfBirth:       time.Time(req.DateOfBirth),
+		LastShearingDate:  lastShearingDate,
+		LastHoofTrimDate:  lastHoofTrimDate,
+		PhotoURL:          req.PhotoURL,
+		Lambings:          domainLambings,
+		Vaccinations:      domainVaccinations,
+		Treatments:        domainTreatments,
+		OwnerUserID:       ownerUserID,
 	}
 }
 
@@ -174,23 +189,25 @@ func ToSheepResponse(s *domain.Sheep) *SheepResponse {
 	}
 
 	return &SheepResponse{
-		ID:               s.ID,
-		EarNumber1:       s.EarNumber1,
-		EarNumber2:       s.EarNumber2,
-		EarNumber3:       s.EarNumber3,
-		NeckNumber:       s.NeckNumber,
-		FatherGen:        s.FatherGen,
-		BirthWeight:      s.BirthWeight,
-		Gender:           s.Gender,
-		DateOfBirth:      DateOnly(s.DateOfBirth),
-		LastShearingDate: FromTimePtrPtr(s.LastShearingDate),
-		LastHoofTrimDate: FromTimePtrPtr(s.LastHoofTrimDate),
-		PhotoURL:         s.PhotoURL,
-		Lambings:         responseLambings,
-		Vaccinations:     responseVaccinations,
-		Treatments:       responseTreatments,
-		CreatedAt:        s.CreatedAt,
-		UpdatedAt:        s.UpdatedAt,
+		ID:                s.ID,
+		EarNumber1:        s.EarNumber1,
+		EarNumber2:        s.EarNumber2,
+		EarNumber3:        s.EarNumber3,
+		NeckNumber:        s.NeckNumber,
+		FatherGen:         s.FatherGen,
+		BirthWeight:       s.BirthWeight,
+		Gender:            s.Gender,
+		ReproductionState: s.ReproductionState,
+		HealthState:       s.HealthState,
+		DateOfBirth:       DateOnly(s.DateOfBirth),
+		LastShearingDate:  FromTimePtrPtr(s.LastShearingDate),
+		LastHoofTrimDate:  FromTimePtrPtr(s.LastHoofTrimDate),
+		PhotoURL:          s.PhotoURL,
+		Lambings:          responseLambings,
+		Vaccinations:      responseVaccinations,
+		Treatments:        responseTreatments,
+		CreatedAt:         s.CreatedAt,
+		UpdatedAt:         s.UpdatedAt,
 	}
 }
 

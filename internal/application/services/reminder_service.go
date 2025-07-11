@@ -95,6 +95,21 @@ func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID 
 				}
 			}
 		}
+
+		// Weaning reminder: 2 weeks after each lambing
+		for _, lamb := range sheep.Lambings {
+			weanDate := lamb.Date.AddDate(0, 0, 14)
+			if weanDate.After(now) && weanDate.Before(now.AddDate(0, 0, 7)) {
+				upcomingReminders = append(upcomingReminders, domain.Reminder{
+					Type:        domain.ReminderTypeWeaning,
+					SheepID:     sheep.ID,
+					SheepName:   sheep.EarNumber1,
+					DueDate:     weanDate,
+					Message:     fmt.Sprintf("زمان از شیر گرفتن بره های %s در تاریخ %s است.", sheep.EarNumber1, toPersianDate(weanDate)),
+					OwnerUserID: userID,
+				})
+			}
+		}
 	}
 
 	// Send notifications for all collected reminders
