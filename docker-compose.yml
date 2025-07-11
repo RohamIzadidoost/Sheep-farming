@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ENV=production
+    container_name: Backend
+    env_file:
+      - ./.env
+    image: ghcr.io/rohamizadidoost/sheep-farming
+    restart: unless-stopped
