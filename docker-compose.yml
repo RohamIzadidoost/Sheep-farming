@@ -17,7 +17,7 @@ services:
       context: ./front
       dockerfile: Dockerfile
     ports:
-      - "80:80"
+      - "5500:5500"
     container_name: Frontend
     image: ghcr.io/rohamizadidoost/sheep-farming-front
     restart: unless-stopped
