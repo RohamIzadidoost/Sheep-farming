@@ -1,10 +1,10 @@
 const statusEl = document.getElementById('status');
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
-const API_BASE = 'http://localhost:8080/api/v1';
+const API_BASE = 'http://82.115.17.206:8080/api/v1';
 
 // Check connection to backend
-fetch('http://localhost:8080/')
+fetch('http://82.115.17.206:8080/')
   .then(res => {
     if (res.ok) {
       statusEl.textContent = 'ارتباط با سرور برقرار است';
