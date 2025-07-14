@@ -55,7 +55,7 @@ func main() {
 	userService := services.NewUserService(userRepo)              // NEW: Initialize UserService first
 	authService := services.NewAuthService(userRepo, userService) // UPDATED: Pass userService to AuthService
 
-	sheepService := services.NewSheepService(sheepRepo)
+	sheepService := services.NewSheepService(sheepRepo, sheepRepo, sheepRepo)
 	vaccineService := services.NewVaccineService(vaccineRepo)
 	reminderService := services.NewReminderService(sheepRepo, vaccineRepo, reminderNotifier)
 

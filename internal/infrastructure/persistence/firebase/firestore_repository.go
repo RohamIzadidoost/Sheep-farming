@@ -18,6 +18,8 @@ import (
 var _ ports.SheepRepository = &FirestoreRepository{}
 var _ ports.VaccineRepository = &FirestoreRepository{}
 var _ ports.VaccinationRepository = &FirestoreRepository{}
+var _ ports.TreatmentRepository = &FirestoreRepository{}
+var _ ports.LambingRepository = &FirestoreRepository{}
 
 // FirestoreRepository implements the SheepRepository and VaccineRepository interfaces using Firestore.
 type FirestoreRepository struct {
@@ -65,6 +67,22 @@ func (r *FirestoreRepository) GetSheepByID(ctx context.Context, userID, sheepID 
 		return nil, fmt.Errorf("failed to convert Firestore data to sheep: %w", err)
 	}
 	sheep.ID = docSnap.Ref.ID // Ensure ID is populated
+
+	lambings, err := r.GetLambings(ctx, userID, sheepID)
+	if err != nil && err != domain.ErrNotFound {
+		return nil, err
+	}
+	treatments, err := r.GetTreatments(ctx, userID, sheepID)
+	if err != nil && err != domain.ErrNotFound {
+		return nil, err
+	}
+	vaccinations, err := r.GetVaccinations(ctx, userID, sheepID)
+	if err != nil && err != domain.ErrNotFound {
+		return nil, err
+	}
+	sheep.Lambings = lambings
+	sheep.Treatments = treatments
+	sheep.Vaccinations = vaccinations
 	return &sheep, nil
 }
 
@@ -86,6 +104,23 @@ func (r *FirestoreRepository) GetAllSheep(ctx context.Context, userID string) ([
 			return nil, fmt.Errorf("failed to convert Firestore data to sheep: %w", err)
 		}
 		sheep.ID = docSnap.Ref.ID
+
+		lambings, err := r.GetLambings(ctx, userID, sheep.ID)
+		if err != nil && err != domain.ErrNotFound {
+			return nil, err
+		}
+		treatments, err := r.GetTreatments(ctx, userID, sheep.ID)
+		if err != nil && err != domain.ErrNotFound {
+			return nil, err
+		}
+		vaccinations, err := r.GetVaccinations(ctx, userID, sheep.ID)
+		if err != nil && err != domain.ErrNotFound {
+			return nil, err
+		}
+		sheep.Lambings = lambings
+		sheep.Treatments = treatments
+		sheep.Vaccinations = vaccinations
+
 		sheepList = append(sheepList, sheep)
 	}
 	return sheepList, nil
@@ -109,9 +144,6 @@ func (r *FirestoreRepository) UpdateSheep(ctx context.Context, sheep *domain.She
 		"lastShearingDate":  sheep.LastShearingDate,
 		"lastHoofTrimDate":  sheep.LastHoofTrimDate,
 		"photoUrl":          sheep.PhotoURL,
-		"lambings":          sheep.Lambings,
-		"vaccinations":      sheep.Vaccinations,
-		"treatments":        sheep.Treatments,
 		"updatedAt":         time.Now(),
 	}
 
@@ -258,4 +290,174 @@ func (r *FirestoreRepository) DeleteVaccination(ctx context.Context, userID, she
 		i++
 	}
 	return fmt.Errorf("vaccination index not found")
+}
+
+// AddTreatment implements ports.TreatmentRepository
+func (r *FirestoreRepository) AddTreatment(ctx context.Context, userID, sheepID string, t domain.Treatment) error {
+	doc := r.getUserCollection(userID, "sheep").Doc(sheepID)
+	if _, err := doc.Get(ctx); err != nil {
+		if status.Code(err) == codes.NotFound {
+			return domain.ErrNotFound
+		}
+		return fmt.Errorf("failed to get sheep for treatment: %w", err)
+	}
+	_, _, err := doc.Collection("treatments").Add(ctx, t)
+	if err != nil {
+		return fmt.Errorf("failed to add treatment: %w", err)
+	}
+	return nil
+}
+
+// GetTreatments implements ports.TreatmentRepository
+func (r *FirestoreRepository) GetTreatments(ctx context.Context, userID, sheepID string) ([]domain.Treatment, error) {
+	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("treatments")
+	iter := coll.Documents(ctx)
+	var list []domain.Treatment
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			if status.Code(err) == codes.NotFound {
+				return nil, domain.ErrNotFound
+			}
+			return nil, fmt.Errorf("failed to iterate treatments: %w", err)
+		}
+		var t domain.Treatment
+		if err := doc.DataTo(&t); err != nil {
+			return nil, fmt.Errorf("failed to decode treatment: %w", err)
+		}
+		list = append(list, t)
+	}
+	return list, nil
+}
+
+// UpdateTreatment implements ports.TreatmentRepository
+func (r *FirestoreRepository) UpdateTreatment(ctx context.Context, userID, sheepID string, index int, t domain.Treatment) error {
+	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("treatments")
+	iter := coll.Documents(ctx)
+	i := 0
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to iterate treatments: %w", err)
+		}
+		if i == index {
+			_, err := doc.Ref.Set(ctx, t)
+			return err
+		}
+		i++
+	}
+	return domain.ErrNotFound
+}
+
+// DeleteTreatment implements ports.TreatmentRepository
+func (r *FirestoreRepository) DeleteTreatment(ctx context.Context, userID, sheepID string, index int) error {
+	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("treatments")
+	iter := coll.Documents(ctx)
+	i := 0
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to iterate treatments: %w", err)
+		}
+		if i == index {
+			_, err := doc.Ref.Delete(ctx)
+			return err
+		}
+		i++
+	}
+	return domain.ErrNotFound
+}
+
+// AddLambing implements ports.LambingRepository
+func (r *FirestoreRepository) AddLambing(ctx context.Context, userID, sheepID string, l domain.Lambing) error {
+	doc := r.getUserCollection(userID, "sheep").Doc(sheepID)
+	if _, err := doc.Get(ctx); err != nil {
+		if status.Code(err) == codes.NotFound {
+			return domain.ErrNotFound
+		}
+		return fmt.Errorf("failed to get sheep for lambing: %w", err)
+	}
+	_, _, err := doc.Collection("lambings").Add(ctx, l)
+	if err != nil {
+		return fmt.Errorf("failed to add lambing: %w", err)
+	}
+	return nil
+}
+
+// GetLambings implements ports.LambingRepository
+func (r *FirestoreRepository) GetLambings(ctx context.Context, userID, sheepID string) ([]domain.Lambing, error) {
+	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("lambings")
+	iter := coll.Documents(ctx)
+	var list []domain.Lambing
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			if status.Code(err) == codes.NotFound {
+				return nil, domain.ErrNotFound
+			}
+			return nil, fmt.Errorf("failed to iterate lambings: %w", err)
+		}
+		var l domain.Lambing
+		if err := doc.DataTo(&l); err != nil {
+			return nil, fmt.Errorf("failed to decode lambing: %w", err)
+		}
+		list = append(list, l)
+	}
+	return list, nil
+}
+
+// UpdateLambing implements ports.LambingRepository
+func (r *FirestoreRepository) UpdateLambing(ctx context.Context, userID, sheepID string, index int, l domain.Lambing) error {
+	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("lambings")
+	iter := coll.Documents(ctx)
+	i := 0
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to iterate lambings: %w", err)
+		}
+		if i == index {
+			_, err := doc.Ref.Set(ctx, l)
+			return err
+		}
+		i++
+	}
+	return domain.ErrNotFound
+}
+
+// DeleteLambing implements ports.LambingRepository
+func (r *FirestoreRepository) DeleteLambing(ctx context.Context, userID, sheepID string, index int) error {
+	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("lambings")
+	iter := coll.Documents(ctx)
+	i := 0
+	for {
+		doc, err := iter.Next()
+		if err == iterator.Done {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("failed to iterate lambings: %w", err)
+		}
+		if i == index {
+			_, err := doc.Ref.Delete(ctx)
+			return err
+		}
+		i++
+	}
+	return domain.ErrNotFound
 }
