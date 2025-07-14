@@ -30,3 +30,19 @@ type VaccinationRepository interface {
 	GetVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error)
 	DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error
 }
+
+// TreatmentRepository defines operations for treatment records.
+type TreatmentRepository interface {
+	AddTreatment(ctx context.Context, userID, sheepID string, t domain.Treatment) error
+	GetTreatments(ctx context.Context, userID, sheepID string) ([]domain.Treatment, error)
+	UpdateTreatment(ctx context.Context, userID, sheepID string, index int, t domain.Treatment) error
+	DeleteTreatment(ctx context.Context, userID, sheepID string, index int) error
+}
+
+// LambingRepository defines operations for lambing records.
+type LambingRepository interface {
+	AddLambing(ctx context.Context, userID, sheepID string, l domain.Lambing) error
+	GetLambings(ctx context.Context, userID, sheepID string) ([]domain.Lambing, error)
+	UpdateLambing(ctx context.Context, userID, sheepID string, index int, l domain.Lambing) error
+	DeleteLambing(ctx context.Context, userID, sheepID string, index int) error
+}
