@@ -42,26 +42,7 @@ func (s *SheepService) GetAllSheep(ctx context.Context, userID string) ([]domain
 
 // FilterSheep retrieves sheep filtered by gender and age range (in days).
 func (s *SheepService) FilterSheep(ctx context.Context, userID string, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
-	sheepList, err := s.repo.GetAllSheep(ctx, userID)
-	if err != nil {
-		return nil, err
-	}
-	var result []domain.Sheep
-	now := time.Now()
-	for _, sh := range sheepList {
-		if gender != nil && sh.Gender != *gender {
-			continue
-		}
-		ageDays := int(now.Sub(sh.DateOfBirth).Hours() / 24)
-		if minAgeDays != nil && ageDays < *minAgeDays {
-			continue
-		}
-		if maxAgeDays != nil && ageDays > *maxAgeDays {
-			continue
-		}
-		result = append(result, sh)
-	}
-	return result, nil
+	return s.repo.FilterSheep(ctx, userID, gender, minAgeDays, maxAgeDays)
 }
 
 // UpdateSheep updates an existing sheep.
