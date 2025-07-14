@@ -3,6 +3,7 @@ package ports
 import (
 	"context"
 	"sheep_farm_backend_go/internal/domain"
+	"time"
 )
 
 // SheepRepository defines the interface for sheep data operations.
@@ -29,4 +30,17 @@ type VaccinationRepository interface {
 	CreateVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error
 	GetVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error)
 	DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error
+}
+
+// LambingRepository defines operations for lambings
+// Additional methods for filtering by date or related events can be implemented
+// as needed.
+type LambingRepository interface {
+	GetLambings(ctx context.Context, userID string, from, to *time.Time) ([]domain.Lambing, error)
+}
+
+// TreatmentRepository defines operations for treatments
+// Basic retrieval for a sheep
+type TreatmentRepository interface {
+	GetTreatments(ctx context.Context, userID, sheepID string) ([]domain.Treatment, error)
 }

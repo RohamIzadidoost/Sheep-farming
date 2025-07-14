@@ -7,7 +7,6 @@ WORKDIR /app
 RUN go env -w GOPROXY=https://proxy.golang.org,direct
 
 COPY go.mod go.sum ./
-COPY ./sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json .
 COPY . .
 RUN go mod download
 
@@ -25,11 +24,7 @@ COPY --from=builder /app/main .
 
 COPY .env .
 
-COPY ./sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json .
 
-ENV GOOGLE_APPLICATION_CREDENTIALS="/app/sheep-farm-app-firebase-adminsdk-fbsvc-881b63938f.json"
-
-run ls
 EXPOSE 8080
 
 CMD [ "./main" ]
