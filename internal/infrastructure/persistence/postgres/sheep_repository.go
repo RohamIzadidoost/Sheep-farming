@@ -42,6 +42,25 @@ func (r *SheepRepository) GetAllSheep(ctx context.Context, userID string) ([]dom
 	return list, err
 }
 
+func (r *SheepRepository) FilterSheep(ctx context.Context, userID string, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
+	var list []domain.Sheep
+	q := r.db.WithContext(ctx).Where("owner_user_id = ?", userID)
+	if gender != nil {
+		q = q.Where("gender = ?", *gender)
+	}
+	if minAgeDays != nil || maxAgeDays != nil {
+		now := time.Now()
+		if minAgeDays != nil {
+			q = q.Where("date_of_birth <= ?", now.AddDate(0, 0, -*minAgeDays))
+		}
+		if maxAgeDays != nil {
+			q = q.Where("date_of_birth >= ?", now.AddDate(0, 0, -*maxAgeDays))
+		}
+	}
+	err := q.Find(&list).Error
+	return list, err
+}
+
 func (r *SheepRepository) UpdateSheep(ctx context.Context, s *domain.Sheep) error {
 	s.UpdatedAt = time.Now()
 	return r.db.WithContext(ctx).Save(s).Error

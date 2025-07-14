@@ -16,18 +16,22 @@ import (
 
 // Server represents the HTTP server.
 type Server struct {
-	Router          *mux.Router
-	SheepHandler    *handlers.SheepHandler
-	VaccineHandler  *handlers.VaccineHandler
-	ReminderHandler *handlers.ReminderHandler
-	AuthHandler     *handlers.AuthHandler      // New: Auth handler
-	AuthMiddleware  *middleware.AuthMiddleware // New: Auth middleware
+	Router           *mux.Router
+	SheepHandler     *handlers.SheepHandler
+	VaccineHandler   *handlers.VaccineHandler
+	LambingHandler   *handlers.LambingHandler
+	TreatmentHandler *handlers.TreatmentHandler
+	ReminderHandler  *handlers.ReminderHandler
+	AuthHandler      *handlers.AuthHandler      // New: Auth handler
+	AuthMiddleware   *middleware.AuthMiddleware // New: Auth middleware
 }
 
 // NewServer creates a new HTTP server instance.
 func NewServer(
 	sheepService *services.SheepService,
 	vaccineService *services.VaccineService,
+	lambingService *services.LambingService,
+	treatmentService *services.TreatmentService,
 	authService ports.AuthService, // New: Auth service
 	userService *services.UserService, // New: User service for AuthHandler
 	reminderService *services.ReminderService,
@@ -41,16 +45,20 @@ func NewServer(
 	// In production, SheepHandler and VaccineHandler would get user ID from context via middleware.
 	sheepHandler := handlers.NewSheepHandler(sheepService)
 	vaccineHandler := handlers.NewVaccineHandler(vaccineService)
+	lambingHandler := handlers.NewLambingHandler(lambingService)
+	treatmentHandler := handlers.NewTreatmentHandler(treatmentService)
 	reminderHandler := handlers.NewReminderHandler(reminderService)
 
 	router := mux.NewRouter()
 	s := &Server{
-		Router:          router,
-		SheepHandler:    sheepHandler,
-		VaccineHandler:  vaccineHandler,
-		ReminderHandler: reminderHandler,
-		AuthHandler:     authHandler,    // New
-		AuthMiddleware:  authMiddleware, // New
+		Router:           router,
+		SheepHandler:     sheepHandler,
+		VaccineHandler:   vaccineHandler,
+		LambingHandler:   lambingHandler,
+		TreatmentHandler: treatmentHandler,
+		ReminderHandler:  reminderHandler,
+		AuthHandler:      authHandler,    // New
+		AuthMiddleware:   authMiddleware, // New
 	}
 	s.setupRoutes()
 	return s
@@ -85,6 +93,16 @@ func (s *Server) setupRoutes() {
 	protectedRouter.HandleFunc("/sheep/{id}/lambings", s.SheepHandler.AddLambing).Methods("POST")
 	protectedRouter.HandleFunc("/sheep/{id}/lambings/{idx}", s.SheepHandler.UpdateLambing).Methods("PUT")
 	protectedRouter.HandleFunc("/sheep/{id}/lambings/{idx}", s.SheepHandler.DeleteLambing).Methods("DELETE")
+
+	protectedRouter.HandleFunc("/lambings", s.LambingHandler.List).Methods("GET")
+	protectedRouter.HandleFunc("/lambings", s.LambingHandler.Create).Methods("POST")
+	protectedRouter.HandleFunc("/lambings", s.LambingHandler.Update).Methods("PUT")
+	protectedRouter.HandleFunc("/lambings", s.LambingHandler.Delete).Methods("DELETE")
+
+	protectedRouter.HandleFunc("/treatments", s.TreatmentHandler.List).Methods("GET")
+	protectedRouter.HandleFunc("/treatments", s.TreatmentHandler.Create).Methods("POST")
+	protectedRouter.HandleFunc("/treatments", s.TreatmentHandler.Update).Methods("PUT")
+	protectedRouter.HandleFunc("/treatments", s.TreatmentHandler.Delete).Methods("DELETE")
 
 	// Reminder Route
 	protectedRouter.HandleFunc("/reminders", s.ReminderHandler.GetReminders).Methods("GET")

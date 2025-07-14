@@ -461,3 +461,77 @@ func (r *FirestoreRepository) DeleteLambing(ctx context.Context, userID, sheepID
 	}
 	return domain.ErrNotFound
 }
+
+// FilterTreatments implements ports.TreatmentRepository
+func (r *FirestoreRepository) FilterTreatments(ctx context.Context, userID string, from, to *time.Time) ([]domain.Treatment, error) {
+	sheep, err := r.GetAllSheep(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	var result []domain.Treatment
+	for _, s := range sheep {
+		list, err := r.GetTreatments(ctx, userID, s.ID)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range list {
+			if from != nil && t.Date.Before(*from) {
+				continue
+			}
+			if to != nil && t.Date.After(*to) {
+				continue
+			}
+			result = append(result, t)
+		}
+	}
+	return result, nil
+}
+
+// FilterLambings implements ports.LambingRepository
+func (r *FirestoreRepository) FilterLambings(ctx context.Context, userID string, from, to *time.Time) ([]domain.Lambing, error) {
+	sheep, err := r.GetAllSheep(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	var result []domain.Lambing
+	for _, s := range sheep {
+		list, err := r.GetLambings(ctx, userID, s.ID)
+		if err != nil {
+			return nil, err
+		}
+		for _, l := range list {
+			if from != nil && l.Date.Before(*from) {
+				continue
+			}
+			if to != nil && l.Date.After(*to) {
+				continue
+			}
+			result = append(result, l)
+		}
+	}
+	return result, nil
+}
+
+// FilterSheep implements ports.SheepRepository
+func (r *FirestoreRepository) FilterSheep(ctx context.Context, userID string, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
+	sheepList, err := r.GetAllSheep(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	var result []domain.Sheep
+	now := time.Now()
+	for _, sh := range sheepList {
+		if gender != nil && sh.Gender != *gender {
+			continue
+		}
+		ageDays := int(now.Sub(sh.DateOfBirth).Hours() / 24)
+		if minAgeDays != nil && ageDays < *minAgeDays {
+			continue
+		}
+		if maxAgeDays != nil && ageDays > *maxAgeDays {
+			continue
+		}
+		result = append(result, sh)
+	}
+	return result, nil
+}

@@ -12,6 +12,8 @@ type SheepRepository interface {
 	CreateSheep(ctx context.Context, sheep *domain.Sheep) error
 	GetSheepByID(ctx context.Context, userID, sheepID string) (*domain.Sheep, error)
 	GetAllSheep(ctx context.Context, userID string) ([]domain.Sheep, error)
+	// FilterSheep returns sheep filtered by gender and age in days
+	FilterSheep(ctx context.Context, userID string, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error)
 	UpdateSheep(ctx context.Context, sheep *domain.Sheep) error
 	DeleteSheep(ctx context.Context, userID, sheepID string) error
 }
@@ -36,11 +38,21 @@ type VaccinationRepository interface {
 // Additional methods for filtering by date or related events can be implemented
 // as needed.
 type LambingRepository interface {
-	GetLambings(ctx context.Context, userID string, from, to *time.Time) ([]domain.Lambing, error)
+	AddLambing(ctx context.Context, userID, sheepID string, l domain.Lambing) error
+	GetLambings(ctx context.Context, userID, sheepID string) ([]domain.Lambing, error)
+	UpdateLambing(ctx context.Context, userID, sheepID string, index int, l domain.Lambing) error
+	DeleteLambing(ctx context.Context, userID, sheepID string, index int) error
+	// FilterLambings retrieves lambings across all sheep within a date range
+	FilterLambings(ctx context.Context, userID string, from, to *time.Time) ([]domain.Lambing, error)
 }
 
 // TreatmentRepository defines operations for treatments
 // Basic retrieval for a sheep
 type TreatmentRepository interface {
+	AddTreatment(ctx context.Context, userID, sheepID string, t domain.Treatment) error
 	GetTreatments(ctx context.Context, userID, sheepID string) ([]domain.Treatment, error)
+	UpdateTreatment(ctx context.Context, userID, sheepID string, index int, t domain.Treatment) error
+	DeleteTreatment(ctx context.Context, userID, sheepID string, index int) error
+	// FilterTreatments retrieves treatments across all sheep within a date range
+	FilterTreatments(ctx context.Context, userID string, from, to *time.Time) ([]domain.Treatment, error)
 }

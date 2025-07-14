@@ -55,8 +55,10 @@ func main() {
 	userService := services.NewUserService(userRepo)              // NEW: Initialize UserService first
 	authService := services.NewAuthService(userRepo, userService) // UPDATED: Pass userService to AuthService
 
-	sheepService := services.NewSheepService(sheepRepo, sheepRepo, sheepRepo)
+	sheepService := services.NewSheepService(sheepRepo, treatmentRepo, lambingRepo)
 	vaccineService := services.NewVaccineService(vaccineRepo)
+	treatmentService := services.NewTreatmentService(treatmentRepo)
+	lambingService := services.NewLambingService(lambingRepo)
 	reminderService := services.NewReminderService(sheepRepo, vaccineRepo, reminderNotifier)
 
 	// --- 5. Initialize Scheduler ---
@@ -75,7 +77,7 @@ func main() {
 	// --- 6. Initialize and Start HTTP Server (Presentation Layer) ---
 	// User ID for handlers will now come from context after authentication.
 	// No need to pass fixedUserID to handlers directly anymore.
-	server := http.NewServer(sheepService, vaccineService, authService, userService, reminderService) // Pass reminder service too
+	server := http.NewServer(sheepService, vaccineService, lambingService, treatmentService, authService, userService, reminderService)
 	apiPort := os.Getenv("API_PORT")
 	if apiPort == "" {
 		apiPort = "8080" // Default port for API
