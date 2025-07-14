@@ -12,6 +12,14 @@ services:
       - ./.env
     image: ghcr.io/rohamizadidoost/sheep-farming
     restart: unless-stopped
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: example
+      POSTGRES_USER: sheep
+      POSTGRES_DB: sheepdb
+    ports:
+      - "5432:5432"
   front:
     build:
       context: ./front
