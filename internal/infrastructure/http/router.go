@@ -3,6 +3,7 @@ package http
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -105,12 +106,17 @@ func (s *Server) setupRoutes() {
 // Start runs the HTTP server.
 func (s *Server) Start(addr string) {
 	// Configure CORS
+	allowedOrigin := os.Getenv("FRONTEND_ORIGIN")
+	if allowedOrigin == "" {
+		allowedOrigin = "http://localhost:5500"
+	}
+
 	c := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000", "http://[::]:5500", "http://82.115.17.206:5500"}, // Allow your React app
+		AllowedOrigins:   []string{allowedOrigin},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Authorization header is now important!
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
-		Debug:            false, // Set to true for debugging CORS issues
+		Debug:            false,
 	})
 
 	handler := c.Handler(s.Router)

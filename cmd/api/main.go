@@ -87,7 +87,11 @@ func main() {
 	}
 
 	appScheduler := scheduler.NewScheduler(reminderService, fixedUserIDForScheduler)
-	appScheduler.StartScheduler() // Start the scheduler in a goroutine
+
+	runMode := os.Getenv("RUN_MODE")
+	if runMode == "server" {
+		appScheduler.StartScheduler() // Start scheduler only on server
+	}
 
 	// --- 6. Initialize and Start HTTP Server (Presentation Layer) ---
 	// User ID for handlers will now come from context after authentication.

@@ -6,7 +6,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ENV=production
+      - RUN_MODE=server
+      - FRONTEND_ORIGIN=http://82.115.17.206:5500
     container_name: Backend
     env_file:
       - ./.env

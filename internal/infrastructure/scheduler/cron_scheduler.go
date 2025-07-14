@@ -7,20 +7,20 @@ import (
 
 	"github.com/robfig/cron/v3" // Popular Go scheduler library
 
-	"sheep_farm_backend_go/internal/application/services" // ReminderService
+	"sheep_farm_backend_go/internal/application/ports" // ReminderService port
 )
 
 // Scheduler manages periodic tasks like sending reminders.
 type Scheduler struct {
 	cron            *cron.Cron
-	reminderService *services.ReminderService
+	reminderService ports.ReminderService
 	// In a real app, you might have an authentication service to get user IDs
 	// Or iterate over all users in your database.
 	fixedUserID string // For simplicity, we'll use a fixed user ID for scheduling reminders
 }
 
 // NewScheduler creates a new Scheduler instance.
-func NewScheduler(reminderService *services.ReminderService, fixedUserID string) *Scheduler {
+func NewScheduler(reminderService ports.ReminderService, fixedUserID string) *Scheduler {
 	return &Scheduler{
 		cron:            cron.New(), // cron.New(cron.WithChain(cron.Recover(log.New(os.Stdout, "", log.LstdFlags)))), for robust error handling
 		reminderService: reminderService,
