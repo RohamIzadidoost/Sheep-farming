@@ -61,7 +61,7 @@ func (h *TreatmentHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID string `json:"sheepId"`
+		SheepID uint `json:"sheepId"`
 		dto.TreatmentDTO
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -91,8 +91,8 @@ func (h *TreatmentHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID string `json:"sheepId"`
-		Index   int    `json:"index"`
+		SheepID uint `json:"sheepId"`
+		Index   int  `json:"index"`
 		dto.TreatmentDTO
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -122,8 +122,8 @@ func (h *TreatmentHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID string `json:"sheepId"`
-		Index   int    `json:"index"`
+		SheepID uint `json:"sheepId"`
+		Index   int  `json:"index"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)

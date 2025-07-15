@@ -62,7 +62,7 @@ func (h *LambingHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID string `json:"sheepId"`
+		SheepID uint `json:"sheepId"`
 		dto.LambingDTO
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -93,8 +93,8 @@ func (h *LambingHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID string `json:"sheepId"`
-		Index   int    `json:"index"`
+		SheepID uint `json:"sheepId"`
+		Index   int  `json:"index"`
 		dto.LambingDTO
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -125,8 +125,8 @@ func (h *LambingHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID string `json:"sheepId"`
-		Index   int    `json:"index"`
+		SheepID uint `json:"sheepId"`
+		Index   int  `json:"index"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)

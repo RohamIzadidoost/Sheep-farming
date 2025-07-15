@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 
@@ -51,7 +52,8 @@ func (h *VaccineHandler) CreateVaccine(w http.ResponseWriter, r *http.Request) {
 // GetVaccineByID handles GET /vaccines/{id} requests.
 func (h *VaccineHandler) GetVaccineByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	vaccineID := vars["id"]
+	idStr := vars["id"]
+	vaccineID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
@@ -59,7 +61,7 @@ func (h *VaccineHandler) GetVaccineByID(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	vaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, vaccineID)
+	vaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, uint(vaccineID))
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -100,7 +102,8 @@ func (h *VaccineHandler) GetAllVaccines(w http.ResponseWriter, r *http.Request) 
 // UpdateVaccine handles PUT /vaccines/{id} requests.
 func (h *VaccineHandler) UpdateVaccine(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	vaccineID := vars["id"]
+	idStr := vars["id"]
+	vaccineID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	var req dto.UpdateVaccineRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -114,7 +117,7 @@ func (h *VaccineHandler) UpdateVaccine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existingVaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, vaccineID)
+	existingVaccine, err := h.vaccineService.GetVaccineByID(r.Context(), userID, uint(vaccineID))
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -144,7 +147,8 @@ func (h *VaccineHandler) UpdateVaccine(w http.ResponseWriter, r *http.Request) {
 // DeleteVaccine handles DELETE /vaccines/{id} requests.
 func (h *VaccineHandler) DeleteVaccine(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	vaccineID := vars["id"]
+	idStr := vars["id"]
+	vaccineID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
@@ -152,7 +156,7 @@ func (h *VaccineHandler) DeleteVaccine(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.vaccineService.DeleteVaccine(r.Context(), userID, vaccineID); err != nil {
+	if err := h.vaccineService.DeleteVaccine(r.Context(), userID, uint(vaccineID)); err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return

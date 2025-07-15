@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"sheep_farm_backend_go/internal/domain"
@@ -65,13 +66,14 @@ func main() {
 	// The scheduler needs the User ID to schedule reminders for a specific user.
 	// In a full system, scheduler might get user IDs from database or a dedicated service.
 	// You might fetch all user IDs and schedule reminders for each.
-	fixedUserIDForScheduler := os.Getenv("SCHEDULER_USER_ID")
-	if fixedUserIDForScheduler == "" {
-		fixedUserIDForScheduler = "test-user-id-for-scheduler" // Default for local testing
-		log.Printf("SCHEDULER_USER_ID not set, using default: %s", fixedUserIDForScheduler)
+	fixedUserIDForSchedulerStr := os.Getenv("SCHEDULER_USER_ID")
+	if fixedUserIDForSchedulerStr == "" {
+		fixedUserIDForSchedulerStr = "1" // default ID for testing
+		log.Printf("SCHEDULER_USER_ID not set, using default: %s", fixedUserIDForSchedulerStr)
 	}
+	fixedID, _ := strconv.ParseUint(fixedUserIDForSchedulerStr, 10, 64)
 
-	appScheduler := scheduler.NewScheduler(reminderService, fixedUserIDForScheduler)
+	appScheduler := scheduler.NewScheduler(reminderService, uint(fixedID))
 	appScheduler.StartScheduler() // Start the scheduler in a goroutine
 
 	// --- 6. Initialize and Start HTTP Server (Presentation Layer) ---

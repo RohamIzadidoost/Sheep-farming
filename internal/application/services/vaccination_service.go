@@ -15,14 +15,14 @@ func NewVaccinationService(repo ports.VaccinationRepository) *VaccinationService
 	return &VaccinationService{repo: repo}
 }
 
-func (s *VaccinationService) AddVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error {
+func (s *VaccinationService) AddVaccination(ctx context.Context, userID, sheepID uint, v domain.Vaccination) error {
 	return s.repo.CreateVaccination(ctx, userID, sheepID, v)
 }
 
-func (s *VaccinationService) ListVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error) {
+func (s *VaccinationService) ListVaccinations(ctx context.Context, userID, sheepID uint) ([]domain.Vaccination, error) {
 	return s.repo.GetVaccinations(ctx, userID, sheepID)
 }
 
-func (s *VaccinationService) DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error {
+func (s *VaccinationService) DeleteVaccination(ctx context.Context, userID, sheepID uint, index int) error {
 	return s.repo.DeleteVaccination(ctx, userID, sheepID, index)
 }

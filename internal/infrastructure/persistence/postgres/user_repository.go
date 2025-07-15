@@ -34,7 +34,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) erro
 	return r.db.WithContext(ctx).Create(user).Error
 }
 
-func (r *UserRepository) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
+func (r *UserRepository) GetUserByID(ctx context.Context, id uint) (*domain.User, error) {
 	var u domain.User
 	err := r.db.WithContext(ctx).First(&u, "id = ?", id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -57,6 +57,6 @@ func (r *UserRepository) UpdateUser(ctx context.Context, user *domain.User) erro
 	return r.db.WithContext(ctx).Save(user).Error
 }
 
-func (r *UserRepository) DeleteUser(ctx context.Context, userID string) error {
+func (r *UserRepository) DeleteUser(ctx context.Context, userID uint) error {
 	return r.db.WithContext(ctx).Where("id = ?", userID).Delete(&domain.User{}).Error
 }

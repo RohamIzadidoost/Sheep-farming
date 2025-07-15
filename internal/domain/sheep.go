@@ -23,11 +23,7 @@ const (
 // Sheep represents a sheep entity in the domain, adapted for GORM.
 type Sheep struct {
 	gorm.Model
-	// Note: If you specifically need string IDs (UUIDs) for your primary key,
-	// you would typically override `ID` like `ID string `gorm:"primaryKey;type:varchar(36)"`.
-	// However, per your request, I'm not changing or adding fields, so gorm.Model's uint ID will be used.
 
-	ID                string     `json:"id,omitempty" firestore:"id,omitempty" gorm:"column:id"`
 	EarNumber1        string     `json:"earNumber1" firestore:"earNumber1" gorm:"column:ear_number1"`
 	EarNumber2        string     `json:"earNumber2,omitempty" firestore:"earNumber2,omitempty" gorm:"column:ear_number2"`
 	EarNumber3        string     `json:"earNumber3,omitempty" firestore:"earNumber3,omitempty" gorm:"column:ear_number3"`
@@ -47,7 +43,5 @@ type Sheep struct {
 	Vaccinations []Vaccination `gorm:"foreignKey:SheepID"`
 	Treatments   []Treatment   `gorm:"foreignKey:SheepID"`
 
-	OwnerUserID string    `gorm:"index;column:owner_user_id" json:"ownerUserId" firestore:"ownerUserId"`
-	CreatedAt   time.Time `json:"createdAt" firestore:"createdAt" gorm:"column:created_at"` // GORM will manage this, but keeping your original tag
-	UpdatedAt   time.Time `json:"updatedAt" firestore:"updatedAt" gorm:"column:updated_at"` // GORM will manage this, but keeping your original tag
+	OwnerUserID uint `gorm:"index;column:owner_user_id" json:"ownerUserId" firestore:"ownerUserId"`
 }

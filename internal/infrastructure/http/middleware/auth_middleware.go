@@ -62,10 +62,10 @@ func (m *AuthMiddleware) Authenticate(next http.Handler) http.Handler {
 }
 
 // GetUserIDFromContext extracts the user ID from the request context.
-func GetUserIDFromContext(ctx context.Context) (string, error) {
-	userID, ok := ctx.Value(UserIDContextKey).(string)
-	if !ok || userID == "" {
-		return "", domain.ErrUnauthorized // User ID not found in context
+func GetUserIDFromContext(ctx context.Context) (uint, error) {
+	userID, ok := ctx.Value(UserIDContextKey).(uint)
+	if !ok {
+		return 0, domain.ErrUnauthorized // User ID not found in context
 	}
 	return userID, nil
 }
