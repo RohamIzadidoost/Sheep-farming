@@ -67,7 +67,7 @@ type UpdateSheepRequest struct {
 
 // SheepResponse represents the sheep data returned in API responses.
 type SheepResponse struct {
-	ID                string           `json:"id"`
+	ID                uint             `json:"id"`
 	EarNumber1        string           `json:"earNumber1"`
 	EarNumber2        string           `json:"earNumber2,omitempty"`
 	EarNumber3        string           `json:"earNumber3,omitempty"`
@@ -89,7 +89,7 @@ type SheepResponse struct {
 }
 
 // ToDomain converts CreateSheepRequest to domain.Sheep
-func (req *CreateSheepRequest) ToDomain(ownerUserID string) *domain.Sheep {
+func (req *CreateSheepRequest) ToDomain(ownerUserID uint) *domain.Sheep {
 	domainVaccinations := make([]domain.Vaccination, len(req.Vaccinations))
 	for i, v := range req.Vaccinations {
 		domainVaccinations[i] = domain.Vaccination{

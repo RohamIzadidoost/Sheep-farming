@@ -16,13 +16,13 @@ type UpdateVaccineRequest struct {
 
 // VaccineResponse represents the vaccine definition data returned in API responses.
 type VaccineResponse struct {
-	ID             string `json:"id"`
+	ID             uint   `json:"id"`
 	Name           string `json:"name"`
 	IntervalMonths int    `json:"intervalMonths"`
 }
 
 // ToDomain converts CreateVaccineRequest to domain.Vaccine
-func (req *CreateVaccineRequest) ToDomain(ownerUserID string) *domain.Vaccine {
+func (req *CreateVaccineRequest) ToDomain(ownerUserID uint) *domain.Vaccine {
 	return &domain.Vaccine{
 		Name:           req.Name,
 		IntervalMonths: req.IntervalMonths,

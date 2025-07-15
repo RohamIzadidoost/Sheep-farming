@@ -25,16 +25,8 @@ type Vaccination struct {
 // Vaccine represents a type of vaccine defined by the user.
 type Vaccine struct {
 	gorm.Model
-	// Your existing ID field is a string, which means gorm.Model's ID (uint) will also exist.
-	// This might lead to two ID columns (one uint, one string).
-	// To use your string ID as primary, you'd typically remove gorm.Model and define `ID string `gorm:"primaryKey"`.
-	// Or, if gorm.Model's ID is enough, remove your string ID field.
-	// Per your request, no fields are changed or removed.
 
-	ID             string    `json:"id,omitempty" firestore:"id,omitempty" gorm:"column:id"`
-	Name           string    `json:"name" firestore:"name" gorm:"column:name"`
-	IntervalMonths int       `json:"intervalMonths" firestore:"intervalMonths" gorm:"column:interval_months"`
-	OwnerUserID    string    `gorm:"index;column:owner_user_id" json:"ownerUserId" firestore:"ownerUserId"`
-	CreatedAt      time.Time `json:"createdAt" firestore:"createdAt" gorm:"column:created_at"`
-	UpdatedAt      time.Time `json:"updatedAt" firestore:"updatedAt" gorm:"column:updated_at"`
+	Name           string `json:"name" firestore:"name" gorm:"column:name"`
+	IntervalMonths int    `json:"intervalMonths" firestore:"intervalMonths" gorm:"column:interval_months"`
+	OwnerUserID    uint   `gorm:"index;column:owner_user_id" json:"ownerUserId" firestore:"ownerUserId"`
 }

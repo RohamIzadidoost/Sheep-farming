@@ -15,12 +15,12 @@ const (
 
 // Reminder represents an upcoming event or task for a sheep.
 type Reminder struct {
-	ID          string       `json:"id,omitempty"`
+	ID          uint         `json:"id,omitempty"`
 	Type        ReminderType `json:"type"`
-	SheepID     string       `json:"sheepId"`
+	SheepID     uint         `json:"sheepId"`
 	SheepName   string       `json:"sheepName"`
 	VaccineName string       `json:"vaccineName,omitempty"` // Only for vaccination reminders
 	DueDate     time.Time    `json:"dueDate"`
 	Message     string       `json:"message"`
-	OwnerUserID string       `json:"ownerUserId"` // To link reminder to a user
+	OwnerUserID uint         `json:"ownerUserId"` // To link reminder to a user
 }

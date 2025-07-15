@@ -17,7 +17,7 @@ type TreatmentRepository struct{ db *gorm.DB }
 
 func NewTreatmentRepository(db *gorm.DB) *TreatmentRepository { return &TreatmentRepository{db: db} }
 
-func (r *TreatmentRepository) AddTreatment(ctx context.Context, userID, sheepID string, t domain.Treatment) error {
+func (r *TreatmentRepository) AddTreatment(ctx context.Context, userID, sheepID uint, t domain.Treatment) error {
 	var sheep domain.Sheep
 	if err := r.db.WithContext(ctx).Where("owner_user_id = ? AND id = ?", userID, sheepID).First(&sheep).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -29,7 +29,7 @@ func (r *TreatmentRepository) AddTreatment(ctx context.Context, userID, sheepID 
 	return r.db.WithContext(ctx).Create(&t).Error
 }
 
-func (r *TreatmentRepository) GetTreatments(ctx context.Context, userID, sheepID string) ([]domain.Treatment, error) {
+func (r *TreatmentRepository) GetTreatments(ctx context.Context, userID, sheepID uint) ([]domain.Treatment, error) {
 	var list []domain.Treatment
 	err := r.db.WithContext(ctx).
 		Joins("JOIN sheep ON sheep.id = treatments.sheep_id").
@@ -38,7 +38,7 @@ func (r *TreatmentRepository) GetTreatments(ctx context.Context, userID, sheepID
 	return list, err
 }
 
-func (r *TreatmentRepository) UpdateTreatment(ctx context.Context, userID, sheepID string, index int, t domain.Treatment) error {
+func (r *TreatmentRepository) UpdateTreatment(ctx context.Context, userID, sheepID uint, index int, t domain.Treatment) error {
 	treatments, err := r.GetTreatments(ctx, userID, sheepID)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (r *TreatmentRepository) UpdateTreatment(ctx context.Context, userID, sheep
 	return r.db.WithContext(ctx).Model(&domain.Treatment{}).Where("id = ?", t.ID).Updates(t).Error
 }
 
-func (r *TreatmentRepository) DeleteTreatment(ctx context.Context, userID, sheepID string, index int) error {
+func (r *TreatmentRepository) DeleteTreatment(ctx context.Context, userID, sheepID uint, index int) error {
 	treatments, err := r.GetTreatments(ctx, userID, sheepID)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (r *TreatmentRepository) DeleteTreatment(ctx context.Context, userID, sheep
 	return r.db.WithContext(ctx).Delete(&domain.Treatment{}, treatments[index].ID).Error
 }
 
-func (r *TreatmentRepository) FilterTreatments(ctx context.Context, userID string, from, to *time.Time) ([]domain.Treatment, error) {
+func (r *TreatmentRepository) FilterTreatments(ctx context.Context, userID uint, from, to *time.Time) ([]domain.Treatment, error) {
 	var list []domain.Treatment
 	q := r.db.WithContext(ctx).Joins("JOIN sheep ON sheep.id = treatments.sheep_id").Where("sheep.owner_user_id = ?", userID)
 	if from != nil {

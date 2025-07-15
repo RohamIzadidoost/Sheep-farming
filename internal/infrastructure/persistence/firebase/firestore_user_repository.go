@@ -3,6 +3,7 @@ package firebase
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -53,13 +54,15 @@ func (r *FirestoreUserRepository) CreateUser(ctx context.Context, user *domain.U
 	if err != nil {
 		return fmt.Errorf("failed to create user in Firestore: %w", err)
 	}
-	user.ID = docRef.ID // Update user object with generated ID
+	id, _ := strconv.ParseUint(docRef.ID, 10, 64)
+	user.ID = uint(id)
 	return nil
 }
 
 // GetUserByID implements ports.UserRepository
-func (r *FirestoreUserRepository) GetUserByID(ctx context.Context, userID string) (*domain.User, error) {
-	docSnap, err := r.getUserCollection().Doc(userID).Get(ctx)
+func (r *FirestoreUserRepository) GetUserByID(ctx context.Context, userID uint) (*domain.User, error) {
+	docID := strconv.FormatUint(uint64(userID), 10)
+	docSnap, err := r.getUserCollection().Doc(docID).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return nil, domain.ErrNotFound
@@ -71,7 +74,8 @@ func (r *FirestoreUserRepository) GetUserByID(ctx context.Context, userID string
 	if err := docSnap.DataTo(&user); err != nil {
 		return nil, fmt.Errorf("failed to convert Firestore data to user: %w", err)
 	}
-	user.ID = docSnap.Ref.ID // Ensure ID is populated
+	id, _ := strconv.ParseUint(docSnap.Ref.ID, 10, 64)
+	user.ID = uint(id)
 	return &user, nil
 }
 
@@ -90,7 +94,8 @@ func (r *FirestoreUserRepository) GetUserByEmail(ctx context.Context, email stri
 	if err := docSnap.DataTo(&user); err != nil {
 		return nil, fmt.Errorf("failed to convert Firestore data to user: %w", err)
 	}
-	user.ID = docSnap.Ref.ID
+	uid, _ := strconv.ParseUint(docSnap.Ref.ID, 10, 64)
+	user.ID = uint(uid)
 	return &user, nil
 }
 
@@ -102,7 +107,8 @@ func (r *FirestoreUserRepository) UpdateUser(ctx context.Context, user *domain.U
 		"role":         user.Role,
 		"updatedAt":    time.Now(),
 	}
-	_, err := r.getUserCollection().Doc(user.ID).Set(ctx, updateMap, firestore.MergeAll)
+	docID := strconv.FormatUint(uint64(user.ID), 10)
+	_, err := r.getUserCollection().Doc(docID).Set(ctx, updateMap, firestore.MergeAll)
 	if err != nil {
 		return fmt.Errorf("failed to update user in Firestore: %w", err)
 	}
@@ -110,8 +116,9 @@ func (r *FirestoreUserRepository) UpdateUser(ctx context.Context, user *domain.U
 }
 
 // DeleteUser implements ports.UserRepository
-func (r *FirestoreUserRepository) DeleteUser(ctx context.Context, userID string) error {
-	_, err := r.getUserCollection().Doc(userID).Delete(ctx)
+func (r *FirestoreUserRepository) DeleteUser(ctx context.Context, userID uint) error {
+	docID := strconv.FormatUint(uint64(userID), 10)
+	_, err := r.getUserCollection().Doc(docID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete user from Firestore: %w", err)
 	}

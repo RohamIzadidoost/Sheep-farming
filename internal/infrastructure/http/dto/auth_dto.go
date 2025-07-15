@@ -16,7 +16,7 @@ type LoginRequest struct {
 
 // AuthResponse represents the response body after successful registration or login.
 type AuthResponse struct {
-	UserID string          `json:"userId"`
+	UserID uint            `json:"userId"`
 	Email  string          `json:"email"`
 	Role   domain.UserRole `json:"role"`
 	Token  string          `json:"token,omitempty"` // JWT token

@@ -16,11 +16,11 @@ type Scheduler struct {
 	reminderService *services.ReminderService
 	// In a real app, you might have an authentication service to get user IDs
 	// Or iterate over all users in your database.
-	fixedUserID string // For simplicity, we'll use a fixed user ID for scheduling reminders
+	fixedUserID uint // For simplicity, we'll use a fixed user ID for scheduling reminders
 }
 
 // NewScheduler creates a new Scheduler instance.
-func NewScheduler(reminderService *services.ReminderService, fixedUserID string) *Scheduler {
+func NewScheduler(reminderService *services.ReminderService, fixedUserID uint) *Scheduler {
 	return &Scheduler{
 		cron:            cron.New(), // cron.New(cron.WithChain(cron.Recover(log.New(os.Stdout, "", log.LstdFlags)))), for robust error handling
 		reminderService: reminderService,

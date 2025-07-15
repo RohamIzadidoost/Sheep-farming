@@ -25,7 +25,7 @@ func (r *VaccineRepository) CreateVaccine(ctx context.Context, v *domain.Vaccine
 	return r.db.WithContext(ctx).Create(v).Error
 }
 
-func (r *VaccineRepository) GetVaccineByID(ctx context.Context, userID, id string) (*domain.Vaccine, error) {
+func (r *VaccineRepository) GetVaccineByID(ctx context.Context, userID, id uint) (*domain.Vaccine, error) {
 	var v domain.Vaccine
 	err := r.db.WithContext(ctx).Where("owner_user_id = ? AND id = ?", userID, id).First(&v).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -34,7 +34,7 @@ func (r *VaccineRepository) GetVaccineByID(ctx context.Context, userID, id strin
 	return &v, err
 }
 
-func (r *VaccineRepository) GetAllVaccines(ctx context.Context, userID string) ([]domain.Vaccine, error) {
+func (r *VaccineRepository) GetAllVaccines(ctx context.Context, userID uint) ([]domain.Vaccine, error) {
 	var list []domain.Vaccine
 	err := r.db.WithContext(ctx).Where("owner_user_id = ?", userID).Find(&list).Error
 	return list, err
@@ -45,6 +45,6 @@ func (r *VaccineRepository) UpdateVaccine(ctx context.Context, v *domain.Vaccine
 	return r.db.WithContext(ctx).Save(v).Error
 }
 
-func (r *VaccineRepository) DeleteVaccine(ctx context.Context, userID, id string) error {
+func (r *VaccineRepository) DeleteVaccine(ctx context.Context, userID, id uint) error {
 	return r.db.WithContext(ctx).Where("owner_user_id = ? AND id = ?", userID, id).Delete(&domain.Vaccine{}).Error
 }

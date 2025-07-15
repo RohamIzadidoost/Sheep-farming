@@ -3,6 +3,7 @@ package firebase
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -33,28 +34,30 @@ func NewFirestoreRepository(client *firestore.Client, appID string) *FirestoreRe
 }
 
 // Helper to get the correct collection path for a user
-func (r *FirestoreRepository) getUserCollection(userID, collectionName string) *firestore.CollectionRef {
+func (r *FirestoreRepository) getUserCollection(userID uint, collectionName string) *firestore.CollectionRef {
 	// This path must match your Firestore security rules: /artifacts/{appId}/users/{userId}/{collectionName}
-	return r.client.Collection(fmt.Sprintf("artifacts/%s/users/%s/%s", r.appID, userID, collectionName))
+	uid := strconv.FormatUint(uint64(userID), 10)
+	return r.client.Collection(fmt.Sprintf("artifacts/%s/users/%s/%s", r.appID, uid, collectionName))
 }
 
 // CreateSheep implements ports.SheepRepository
 func (r *FirestoreRepository) CreateSheep(ctx context.Context, sheep *domain.Sheep) error {
-	if sheep.OwnerUserID == "" {
+	if sheep.OwnerUserID == 0 {
 		return domain.ErrUnauthorized // OwnerUserID is required
 	}
-	// Firestore generates ID automatically if not provided
 	docRef, _, err := r.getUserCollection(sheep.OwnerUserID, "sheep").Add(ctx, sheep)
 	if err != nil {
 		return fmt.Errorf("failed to create sheep in Firestore: %w", err)
 	}
-	sheep.ID = docRef.ID // Update sheep object with generated ID
+	id, _ := strconv.ParseUint(docRef.ID, 10, 64)
+	sheep.ID = uint(id)
 	return nil
 }
 
 // GetSheepByID implements ports.SheepRepository
-func (r *FirestoreRepository) GetSheepByID(ctx context.Context, userID, sheepID string) (*domain.Sheep, error) {
-	docSnap, err := r.getUserCollection(userID, "sheep").Doc(sheepID).Get(ctx)
+func (r *FirestoreRepository) GetSheepByID(ctx context.Context, userID, sheepID uint) (*domain.Sheep, error) {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	docSnap, err := r.getUserCollection(userID, "sheep").Doc(docID).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return nil, domain.ErrNotFound
@@ -66,7 +69,8 @@ func (r *FirestoreRepository) GetSheepByID(ctx context.Context, userID, sheepID 
 	if err := docSnap.DataTo(&sheep); err != nil {
 		return nil, fmt.Errorf("failed to convert Firestore data to sheep: %w", err)
 	}
-	sheep.ID = docSnap.Ref.ID // Ensure ID is populated
+	sid, _ := strconv.ParseUint(docSnap.Ref.ID, 10, 64)
+	sheep.ID = uint(sid)
 
 	lambings, err := r.GetLambings(ctx, userID, sheepID)
 	if err != nil && err != domain.ErrNotFound {
@@ -87,7 +91,7 @@ func (r *FirestoreRepository) GetSheepByID(ctx context.Context, userID, sheepID 
 }
 
 // GetAllSheep implements ports.SheepRepository
-func (r *FirestoreRepository) GetAllSheep(ctx context.Context, userID string) ([]domain.Sheep, error) {
+func (r *FirestoreRepository) GetAllSheep(ctx context.Context, userID uint) ([]domain.Sheep, error) {
 	var sheepList []domain.Sheep
 	iter := r.getUserCollection(userID, "sheep").Documents(ctx)
 	for {
@@ -103,7 +107,8 @@ func (r *FirestoreRepository) GetAllSheep(ctx context.Context, userID string) ([
 		if err := docSnap.DataTo(&sheep); err != nil {
 			return nil, fmt.Errorf("failed to convert Firestore data to sheep: %w", err)
 		}
-		sheep.ID = docSnap.Ref.ID
+		sid, _ := strconv.ParseUint(docSnap.Ref.ID, 10, 64)
+		sheep.ID = uint(sid)
 
 		lambings, err := r.GetLambings(ctx, userID, sheep.ID)
 		if err != nil && err != domain.ErrNotFound {
@@ -147,7 +152,8 @@ func (r *FirestoreRepository) UpdateSheep(ctx context.Context, sheep *domain.She
 		"updatedAt":         time.Now(),
 	}
 
-	_, err := r.getUserCollection(sheep.OwnerUserID, "sheep").Doc(sheep.ID).Set(ctx, updateMap, firestore.MergeAll)
+	docID := strconv.FormatUint(uint64(sheep.ID), 10)
+	_, err := r.getUserCollection(sheep.OwnerUserID, "sheep").Doc(docID).Set(ctx, updateMap, firestore.MergeAll)
 	if err != nil {
 		return fmt.Errorf("failed to update sheep in Firestore: %w", err)
 	}
@@ -155,8 +161,9 @@ func (r *FirestoreRepository) UpdateSheep(ctx context.Context, sheep *domain.She
 }
 
 // DeleteSheep implements ports.SheepRepository
-func (r *FirestoreRepository) DeleteSheep(ctx context.Context, userID, sheepID string) error {
-	_, err := r.getUserCollection(userID, "sheep").Doc(sheepID).Delete(ctx)
+func (r *FirestoreRepository) DeleteSheep(ctx context.Context, userID, sheepID uint) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	_, err := r.getUserCollection(userID, "sheep").Doc(docID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete sheep from Firestore: %w", err)
 	}
@@ -165,20 +172,22 @@ func (r *FirestoreRepository) DeleteSheep(ctx context.Context, userID, sheepID s
 
 // CreateVaccine implements ports.VaccineRepository
 func (r *FirestoreRepository) CreateVaccine(ctx context.Context, vaccine *domain.Vaccine) error {
-	if vaccine.OwnerUserID == "" {
+	if vaccine.OwnerUserID == 0 {
 		return domain.ErrUnauthorized // OwnerUserID is required
 	}
 	docRef, _, err := r.getUserCollection(vaccine.OwnerUserID, "vaccines").Add(ctx, vaccine)
 	if err != nil {
 		return fmt.Errorf("failed to create vaccine in Firestore: %w", err)
 	}
-	vaccine.ID = docRef.ID
+	vid, _ := strconv.ParseUint(docRef.ID, 10, 64)
+	vaccine.ID = uint(vid)
 	return nil
 }
 
 // GetVaccineByID implements ports.VaccineRepository
-func (r *FirestoreRepository) GetVaccineByID(ctx context.Context, userID, vaccineID string) (*domain.Vaccine, error) {
-	docSnap, err := r.getUserCollection(userID, "vaccines").Doc(vaccineID).Get(ctx)
+func (r *FirestoreRepository) GetVaccineByID(ctx context.Context, userID, vaccineID uint) (*domain.Vaccine, error) {
+	docID := strconv.FormatUint(uint64(vaccineID), 10)
+	docSnap, err := r.getUserCollection(userID, "vaccines").Doc(docID).Get(ctx)
 	if err != nil {
 		if status.Code(err) == codes.NotFound {
 			return nil, domain.ErrNotFound
@@ -190,12 +199,13 @@ func (r *FirestoreRepository) GetVaccineByID(ctx context.Context, userID, vaccin
 	if err := docSnap.DataTo(&vaccine); err != nil {
 		return nil, fmt.Errorf("failed to convert Firestore data to vaccine: %w", err)
 	}
-	vaccine.ID = docSnap.Ref.ID
+	vid, _ := strconv.ParseUint(docSnap.Ref.ID, 10, 64)
+	vaccine.ID = uint(vid)
 	return &vaccine, nil
 }
 
 // GetAllVaccines implements ports.VaccineRepository
-func (r *FirestoreRepository) GetAllVaccines(ctx context.Context, userID string) ([]domain.Vaccine, error) {
+func (r *FirestoreRepository) GetAllVaccines(ctx context.Context, userID uint) ([]domain.Vaccine, error) {
 	var vaccinesList []domain.Vaccine
 	iter := r.getUserCollection(userID, "vaccines").Documents(ctx)
 	for {
@@ -211,7 +221,8 @@ func (r *FirestoreRepository) GetAllVaccines(ctx context.Context, userID string)
 		if err := docSnap.DataTo(&vaccine); err != nil {
 			return nil, fmt.Errorf("failed to convert Firestore data to vaccine: %w", err)
 		}
-		vaccine.ID = docSnap.Ref.ID
+		vid, _ := strconv.ParseUint(docSnap.Ref.ID, 10, 64)
+		vaccine.ID = uint(vid)
 		vaccinesList = append(vaccinesList, vaccine)
 	}
 	return vaccinesList, nil
@@ -224,7 +235,8 @@ func (r *FirestoreRepository) UpdateVaccine(ctx context.Context, vaccine *domain
 		"intervalMonths": vaccine.IntervalMonths,
 		"updatedAt":      time.Now(),
 	}
-	_, err := r.getUserCollection(vaccine.OwnerUserID, "vaccines").Doc(vaccine.ID).Set(ctx, updateMap, firestore.MergeAll)
+	docID := strconv.FormatUint(uint64(vaccine.ID), 10)
+	_, err := r.getUserCollection(vaccine.OwnerUserID, "vaccines").Doc(docID).Set(ctx, updateMap, firestore.MergeAll)
 	if err != nil {
 		return fmt.Errorf("failed to update vaccine in Firestore: %w", err)
 	}
@@ -232,8 +244,9 @@ func (r *FirestoreRepository) UpdateVaccine(ctx context.Context, vaccine *domain
 }
 
 // DeleteVaccine implements ports.VaccineRepository
-func (r *FirestoreRepository) DeleteVaccine(ctx context.Context, userID, vaccineID string) error {
-	_, err := r.getUserCollection(userID, "vaccines").Doc(vaccineID).Delete(ctx)
+func (r *FirestoreRepository) DeleteVaccine(ctx context.Context, userID, vaccineID uint) error {
+	docID := strconv.FormatUint(uint64(vaccineID), 10)
+	_, err := r.getUserCollection(userID, "vaccines").Doc(docID).Delete(ctx)
 	if err != nil {
 		return fmt.Errorf("failed to delete vaccine from Firestore: %w", err)
 	}
@@ -241,8 +254,9 @@ func (r *FirestoreRepository) DeleteVaccine(ctx context.Context, userID, vaccine
 }
 
 // CreateVaccination implements ports.VaccinationRepository
-func (r *FirestoreRepository) CreateVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error {
-	_, _, err := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("vaccinations").Add(ctx, v)
+func (r *FirestoreRepository) CreateVaccination(ctx context.Context, userID, sheepID uint, v domain.Vaccination) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	_, _, err := r.getUserCollection(userID, "sheep").Doc(docID).Collection("vaccinations").Add(ctx, v)
 	if err != nil {
 		return fmt.Errorf("failed to create vaccination in Firestore: %w", err)
 	}
@@ -250,8 +264,9 @@ func (r *FirestoreRepository) CreateVaccination(ctx context.Context, userID, she
 }
 
 // GetVaccinations implements ports.VaccinationRepository
-func (r *FirestoreRepository) GetVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error) {
-	iter := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("vaccinations").Documents(ctx)
+func (r *FirestoreRepository) GetVaccinations(ctx context.Context, userID, sheepID uint) ([]domain.Vaccination, error) {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	iter := r.getUserCollection(userID, "sheep").Doc(docID).Collection("vaccinations").Documents(ctx)
 	var list []domain.Vaccination
 	for {
 		doc, err := iter.Next()
@@ -271,9 +286,10 @@ func (r *FirestoreRepository) GetVaccinations(ctx context.Context, userID, sheep
 }
 
 // DeleteVaccination implements ports.VaccinationRepository. The index corresponds to order returned by GetVaccinations.
-func (r *FirestoreRepository) DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error {
+func (r *FirestoreRepository) DeleteVaccination(ctx context.Context, userID, sheepID uint, index int) error {
 	// Retrieve documents to find the one at given index
-	iter := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("vaccinations").Documents(ctx)
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	iter := r.getUserCollection(userID, "sheep").Doc(docID).Collection("vaccinations").Documents(ctx)
 	i := 0
 	for {
 		doc, err := iter.Next()
@@ -293,8 +309,9 @@ func (r *FirestoreRepository) DeleteVaccination(ctx context.Context, userID, she
 }
 
 // AddTreatment implements ports.TreatmentRepository
-func (r *FirestoreRepository) AddTreatment(ctx context.Context, userID, sheepID string, t domain.Treatment) error {
-	doc := r.getUserCollection(userID, "sheep").Doc(sheepID)
+func (r *FirestoreRepository) AddTreatment(ctx context.Context, userID, sheepID uint, t domain.Treatment) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	doc := r.getUserCollection(userID, "sheep").Doc(docID)
 	if _, err := doc.Get(ctx); err != nil {
 		if status.Code(err) == codes.NotFound {
 			return domain.ErrNotFound
@@ -309,8 +326,9 @@ func (r *FirestoreRepository) AddTreatment(ctx context.Context, userID, sheepID 
 }
 
 // GetTreatments implements ports.TreatmentRepository
-func (r *FirestoreRepository) GetTreatments(ctx context.Context, userID, sheepID string) ([]domain.Treatment, error) {
-	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("treatments")
+func (r *FirestoreRepository) GetTreatments(ctx context.Context, userID, sheepID uint) ([]domain.Treatment, error) {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	coll := r.getUserCollection(userID, "sheep").Doc(docID).Collection("treatments")
 	iter := coll.Documents(ctx)
 	var list []domain.Treatment
 	for {
@@ -334,8 +352,9 @@ func (r *FirestoreRepository) GetTreatments(ctx context.Context, userID, sheepID
 }
 
 // UpdateTreatment implements ports.TreatmentRepository
-func (r *FirestoreRepository) UpdateTreatment(ctx context.Context, userID, sheepID string, index int, t domain.Treatment) error {
-	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("treatments")
+func (r *FirestoreRepository) UpdateTreatment(ctx context.Context, userID, sheepID uint, index int, t domain.Treatment) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	coll := r.getUserCollection(userID, "sheep").Doc(docID).Collection("treatments")
 	iter := coll.Documents(ctx)
 	i := 0
 	for {
@@ -356,8 +375,9 @@ func (r *FirestoreRepository) UpdateTreatment(ctx context.Context, userID, sheep
 }
 
 // DeleteTreatment implements ports.TreatmentRepository
-func (r *FirestoreRepository) DeleteTreatment(ctx context.Context, userID, sheepID string, index int) error {
-	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("treatments")
+func (r *FirestoreRepository) DeleteTreatment(ctx context.Context, userID, sheepID uint, index int) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	coll := r.getUserCollection(userID, "sheep").Doc(docID).Collection("treatments")
 	iter := coll.Documents(ctx)
 	i := 0
 	for {
@@ -378,8 +398,9 @@ func (r *FirestoreRepository) DeleteTreatment(ctx context.Context, userID, sheep
 }
 
 // AddLambing implements ports.LambingRepository
-func (r *FirestoreRepository) AddLambing(ctx context.Context, userID, sheepID string, l domain.Lambing) error {
-	doc := r.getUserCollection(userID, "sheep").Doc(sheepID)
+func (r *FirestoreRepository) AddLambing(ctx context.Context, userID, sheepID uint, l domain.Lambing) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	doc := r.getUserCollection(userID, "sheep").Doc(docID)
 	if _, err := doc.Get(ctx); err != nil {
 		if status.Code(err) == codes.NotFound {
 			return domain.ErrNotFound
@@ -394,8 +415,9 @@ func (r *FirestoreRepository) AddLambing(ctx context.Context, userID, sheepID st
 }
 
 // GetLambings implements ports.LambingRepository
-func (r *FirestoreRepository) GetLambings(ctx context.Context, userID, sheepID string) ([]domain.Lambing, error) {
-	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("lambings")
+func (r *FirestoreRepository) GetLambings(ctx context.Context, userID, sheepID uint) ([]domain.Lambing, error) {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	coll := r.getUserCollection(userID, "sheep").Doc(docID).Collection("lambings")
 	iter := coll.Documents(ctx)
 	var list []domain.Lambing
 	for {
@@ -419,8 +441,9 @@ func (r *FirestoreRepository) GetLambings(ctx context.Context, userID, sheepID s
 }
 
 // UpdateLambing implements ports.LambingRepository
-func (r *FirestoreRepository) UpdateLambing(ctx context.Context, userID, sheepID string, index int, l domain.Lambing) error {
-	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("lambings")
+func (r *FirestoreRepository) UpdateLambing(ctx context.Context, userID, sheepID uint, index int, l domain.Lambing) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	coll := r.getUserCollection(userID, "sheep").Doc(docID).Collection("lambings")
 	iter := coll.Documents(ctx)
 	i := 0
 	for {
@@ -441,8 +464,9 @@ func (r *FirestoreRepository) UpdateLambing(ctx context.Context, userID, sheepID
 }
 
 // DeleteLambing implements ports.LambingRepository
-func (r *FirestoreRepository) DeleteLambing(ctx context.Context, userID, sheepID string, index int) error {
-	coll := r.getUserCollection(userID, "sheep").Doc(sheepID).Collection("lambings")
+func (r *FirestoreRepository) DeleteLambing(ctx context.Context, userID, sheepID uint, index int) error {
+	docID := strconv.FormatUint(uint64(sheepID), 10)
+	coll := r.getUserCollection(userID, "sheep").Doc(docID).Collection("lambings")
 	iter := coll.Documents(ctx)
 	i := 0
 	for {
@@ -463,7 +487,7 @@ func (r *FirestoreRepository) DeleteLambing(ctx context.Context, userID, sheepID
 }
 
 // FilterTreatments implements ports.TreatmentRepository
-func (r *FirestoreRepository) FilterTreatments(ctx context.Context, userID string, from, to *time.Time) ([]domain.Treatment, error) {
+func (r *FirestoreRepository) FilterTreatments(ctx context.Context, userID uint, from, to *time.Time) ([]domain.Treatment, error) {
 	sheep, err := r.GetAllSheep(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -488,7 +512,7 @@ func (r *FirestoreRepository) FilterTreatments(ctx context.Context, userID strin
 }
 
 // FilterLambings implements ports.LambingRepository
-func (r *FirestoreRepository) FilterLambings(ctx context.Context, userID string, from, to *time.Time) ([]domain.Lambing, error) {
+func (r *FirestoreRepository) FilterLambings(ctx context.Context, userID uint, from, to *time.Time) ([]domain.Lambing, error) {
 	sheep, err := r.GetAllSheep(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -513,7 +537,7 @@ func (r *FirestoreRepository) FilterLambings(ctx context.Context, userID string,
 }
 
 // FilterSheep implements ports.SheepRepository
-func (r *FirestoreRepository) FilterSheep(ctx context.Context, userID string, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
+func (r *FirestoreRepository) FilterSheep(ctx context.Context, userID uint, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
 	sheepList, err := r.GetAllSheep(ctx, userID)
 	if err != nil {
 		return nil, err

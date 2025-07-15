@@ -17,7 +17,7 @@ type LambingRepository struct{ db *gorm.DB }
 
 func NewLambingRepository(db *gorm.DB) *LambingRepository { return &LambingRepository{db: db} }
 
-func (r *LambingRepository) AddLambing(ctx context.Context, userID, sheepID string, l domain.Lambing) error {
+func (r *LambingRepository) AddLambing(ctx context.Context, userID, sheepID uint, l domain.Lambing) error {
 	var sheep domain.Sheep
 	if err := r.db.WithContext(ctx).Where("owner_user_id = ? AND id = ?", userID, sheepID).First(&sheep).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -29,7 +29,7 @@ func (r *LambingRepository) AddLambing(ctx context.Context, userID, sheepID stri
 	return r.db.WithContext(ctx).Create(&l).Error
 }
 
-func (r *LambingRepository) GetLambings(ctx context.Context, userID, sheepID string) ([]domain.Lambing, error) {
+func (r *LambingRepository) GetLambings(ctx context.Context, userID, sheepID uint) ([]domain.Lambing, error) {
 	var list []domain.Lambing
 	err := r.db.WithContext(ctx).
 		Joins("JOIN sheep ON sheep.id = lambings.sheep_id").
@@ -38,7 +38,7 @@ func (r *LambingRepository) GetLambings(ctx context.Context, userID, sheepID str
 	return list, err
 }
 
-func (r *LambingRepository) UpdateLambing(ctx context.Context, userID, sheepID string, index int, l domain.Lambing) error {
+func (r *LambingRepository) UpdateLambing(ctx context.Context, userID, sheepID uint, index int, l domain.Lambing) error {
 	lambings, err := r.GetLambings(ctx, userID, sheepID)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (r *LambingRepository) UpdateLambing(ctx context.Context, userID, sheepID s
 	return r.db.WithContext(ctx).Model(&domain.Lambing{}).Where("id = ?", l.ID).Updates(l).Error
 }
 
-func (r *LambingRepository) DeleteLambing(ctx context.Context, userID, sheepID string, index int) error {
+func (r *LambingRepository) DeleteLambing(ctx context.Context, userID, sheepID uint, index int) error {
 	lambings, err := r.GetLambings(ctx, userID, sheepID)
 	if err != nil {
 		return err
@@ -61,7 +61,7 @@ func (r *LambingRepository) DeleteLambing(ctx context.Context, userID, sheepID s
 	return r.db.WithContext(ctx).Delete(&domain.Lambing{}, lambings[index].ID).Error
 }
 
-func (r *LambingRepository) FilterLambings(ctx context.Context, userID string, from, to *time.Time) ([]domain.Lambing, error) {
+func (r *LambingRepository) FilterLambings(ctx context.Context, userID uint, from, to *time.Time) ([]domain.Lambing, error) {
 	var list []domain.Lambing
 	q := r.db.WithContext(ctx).Joins("JOIN sheep ON sheep.id = lambings.sheep_id").Where("sheep.owner_user_id = ?", userID)
 	if from != nil {

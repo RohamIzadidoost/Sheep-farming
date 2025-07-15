@@ -28,7 +28,7 @@ func NewReminderService(sheepRepo ports.SheepRepository, vaccineRepo ports.Vacci
 // CalculateAndSendReminders fetches all sheep and vaccine data for a user,
 // calculates upcoming reminders, and sends notifications.
 // This function would typically be called by a scheduler.
-func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID string) ([]domain.Reminder, error) {
+func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID uint) ([]domain.Reminder, error) {
 	sheepList, err := s.sheepRepo.GetAllSheep(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get all sheep for reminders: %w", err)
@@ -40,7 +40,7 @@ func (s *ReminderService) CalculateAndSendReminders(ctx context.Context, userID 
 	}
 	vaccineMap := make(map[string]domain.Vaccine)
 	for _, v := range vaccineDefs {
-		vaccineMap[v.ID] = v
+		vaccineMap[v.Name] = v
 	}
 
 	var upcomingReminders []domain.Reminder

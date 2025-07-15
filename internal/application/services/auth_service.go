@@ -5,6 +5,7 @@ import (
 	"errors" // Make sure errors is imported here
 	"fmt"
 	"os" // For JWT_SECRET_KEY
+	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -16,7 +17,7 @@ import (
 
 // claims represents the JWT claims.
 type Claims struct {
-	UserID string          `json:"userId"`
+	UserID uint            `json:"userId"`
 	Email  string          `json:"email"`
 	Role   domain.UserRole `json:"role"`
 	jwt.RegisteredClaims
@@ -101,7 +102,7 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (string
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Subject:   user.ID,
+			Subject:   strconv.FormatUint(uint64(user.ID), 10),
 		},
 	}
 

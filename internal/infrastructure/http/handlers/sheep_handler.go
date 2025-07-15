@@ -53,7 +53,8 @@ func (h *SheepHandler) CreateSheep(w http.ResponseWriter, r *http.Request) {
 // GetSheepByID handles GET /sheep/{id} requests.
 func (h *SheepHandler) GetSheepByID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
@@ -61,7 +62,7 @@ func (h *SheepHandler) GetSheepByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sheep, err := h.sheepService.GetSheepByID(r.Context(), userID, sheepID)
+	sheep, err := h.sheepService.GetSheepByID(r.Context(), userID, uint(sheepID))
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -120,7 +121,8 @@ func (h *SheepHandler) GetAllSheep(w http.ResponseWriter, r *http.Request) {
 // UpdateSheep handles PUT /sheep/{id} requests.
 func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	var req dto.UpdateSheepRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -135,7 +137,7 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	existingSheep, err := h.sheepService.GetSheepByID(r.Context(), userID, sheepID)
+	existingSheep, err := h.sheepService.GetSheepByID(r.Context(), userID, uint(sheepID))
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -244,7 +246,8 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 // DeleteSheep handles DELETE /sheep/{id} requests.
 func (h *SheepHandler) DeleteSheep(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	userID, err := middleware.GetUserIDFromContext(r.Context())
 	if err != nil {
@@ -252,7 +255,7 @@ func (h *SheepHandler) DeleteSheep(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.sheepService.DeleteSheep(r.Context(), userID, sheepID); err != nil {
+	if err := h.sheepService.DeleteSheep(r.Context(), userID, uint(sheepID)); err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
 			return
@@ -267,7 +270,8 @@ func (h *SheepHandler) DeleteSheep(w http.ResponseWriter, r *http.Request) {
 // AddVaccination handles POST /sheep/{id}/vaccinations requests.
 func (h *SheepHandler) AddVaccination(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	var req dto.VaccinationDTO
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -281,7 +285,7 @@ func (h *SheepHandler) AddVaccination(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.sheepService.AddVaccination(r.Context(), userID, sheepID, domain.Vaccination{
+	err = h.sheepService.AddVaccination(r.Context(), userID, uint(sheepID), domain.Vaccination{
 		Date:        time.Time(req.Date),
 		Vaccine:     req.Vaccine,
 		Vaccinator:  req.Vaccinator,
@@ -302,7 +306,8 @@ func (h *SheepHandler) AddVaccination(w http.ResponseWriter, r *http.Request) {
 // AddTreatment handles POST /sheep/{id}/treatments requests.
 func (h *SheepHandler) AddTreatment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	var req dto.TreatmentDTO
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -316,7 +321,7 @@ func (h *SheepHandler) AddTreatment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.sheepService.AddTreatment(r.Context(), userID, sheepID, domain.Treatment{
+	err = h.sheepService.AddTreatment(r.Context(), userID, uint(sheepID), domain.Treatment{
 		Date:               time.Time(req.Date),
 		DiseaseDescription: req.DiseaseDescription,
 		TreatDescription:   req.TreatDescription,
@@ -336,7 +341,8 @@ func (h *SheepHandler) AddTreatment(w http.ResponseWriter, r *http.Request) {
 // AddLambing handles POST /sheep/{id}/lambings requests.
 func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
 	var req dto.LambingDTO
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -350,7 +356,7 @@ func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.sheepService.AddLambing(r.Context(), userID, sheepID, domain.Lambing{
+	err = h.sheepService.AddLambing(r.Context(), userID, uint(sheepID), domain.Lambing{
 		Date:    time.Time(req.Date),
 		NumBorn: req.NumBorn,
 		Sexes:   req.Sexes,
@@ -371,7 +377,8 @@ func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
 // UpdateVaccination handles PUT /sheep/{id}/vaccinations/{idx} requests.
 func (h *SheepHandler) UpdateVaccination(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 	idxStr := vars["idx"]
 	index, err := strconv.Atoi(idxStr)
 	if err != nil {
@@ -388,7 +395,7 @@ func (h *SheepHandler) UpdateVaccination(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	err = h.sheepService.UpdateVaccination(r.Context(), userID, sheepID, index, domain.Vaccination{
+	err = h.sheepService.UpdateVaccination(r.Context(), userID, uint(sheepID), index, domain.Vaccination{
 		Date:        time.Time(req.Date),
 		Vaccine:     req.Vaccine,
 		Vaccinator:  req.Vaccinator,
@@ -408,7 +415,8 @@ func (h *SheepHandler) UpdateVaccination(w http.ResponseWriter, r *http.Request)
 // DeleteVaccination handles DELETE /sheep/{id}/vaccinations/{idx} requests.
 func (h *SheepHandler) DeleteVaccination(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 	idxStr := vars["idx"]
 	index, err := strconv.Atoi(idxStr)
 	if err != nil {
@@ -420,7 +428,7 @@ func (h *SheepHandler) DeleteVaccination(w http.ResponseWriter, r *http.Request)
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	err = h.sheepService.DeleteVaccination(r.Context(), userID, sheepID, index)
+	err = h.sheepService.DeleteVaccination(r.Context(), userID, uint(sheepID), index)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -435,7 +443,8 @@ func (h *SheepHandler) DeleteVaccination(w http.ResponseWriter, r *http.Request)
 // UpdateTreatment handles PUT /sheep/{id}/treatments/{idx} requests.
 func (h *SheepHandler) UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 	idxStr := vars["idx"]
 	index, err := strconv.Atoi(idxStr)
 	if err != nil {
@@ -452,7 +461,7 @@ func (h *SheepHandler) UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	err = h.sheepService.UpdateTreatment(r.Context(), userID, sheepID, index, domain.Treatment{
+	err = h.sheepService.UpdateTreatment(r.Context(), userID, uint(sheepID), index, domain.Treatment{
 		Date:               time.Time(req.Date),
 		DiseaseDescription: req.DiseaseDescription,
 		TreatDescription:   req.TreatDescription,
@@ -471,7 +480,8 @@ func (h *SheepHandler) UpdateTreatment(w http.ResponseWriter, r *http.Request) {
 // DeleteTreatment handles DELETE /sheep/{id}/treatments/{idx} requests.
 func (h *SheepHandler) DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 	idxStr := vars["idx"]
 	index, err := strconv.Atoi(idxStr)
 	if err != nil {
@@ -483,7 +493,7 @@ func (h *SheepHandler) DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	err = h.sheepService.DeleteTreatment(r.Context(), userID, sheepID, index)
+	err = h.sheepService.DeleteTreatment(r.Context(), userID, uint(sheepID), index)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)
@@ -498,7 +508,8 @@ func (h *SheepHandler) DeleteTreatment(w http.ResponseWriter, r *http.Request) {
 // UpdateLambing handles PUT /sheep/{id}/lambings/{idx} requests.
 func (h *SheepHandler) UpdateLambing(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 	idxStr := vars["idx"]
 	index, err := strconv.Atoi(idxStr)
 	if err != nil {
@@ -515,7 +526,7 @@ func (h *SheepHandler) UpdateLambing(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	err = h.sheepService.UpdateLambing(r.Context(), userID, sheepID, index, domain.Lambing{
+	err = h.sheepService.UpdateLambing(r.Context(), userID, uint(sheepID), index, domain.Lambing{
 		Date:    time.Time(req.Date),
 		NumBorn: req.NumBorn,
 		Sexes:   req.Sexes,
@@ -535,7 +546,8 @@ func (h *SheepHandler) UpdateLambing(w http.ResponseWriter, r *http.Request) {
 // DeleteLambing handles DELETE /sheep/{id}/lambings/{idx} requests.
 func (h *SheepHandler) DeleteLambing(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	sheepID := vars["id"]
+	idStr := vars["id"]
+	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 	idxStr := vars["idx"]
 	index, err := strconv.Atoi(idxStr)
 	if err != nil {
@@ -547,7 +559,7 @@ func (h *SheepHandler) DeleteLambing(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
-	err = h.sheepService.DeleteLambing(r.Context(), userID, sheepID, index)
+	err = h.sheepService.DeleteLambing(r.Context(), userID, uint(sheepID), index)
 	if err != nil {
 		if err == domain.ErrNotFound {
 			http.Error(w, err.Error(), http.StatusNotFound)

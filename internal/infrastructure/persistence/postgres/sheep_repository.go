@@ -26,7 +26,7 @@ func (r *SheepRepository) CreateSheep(ctx context.Context, s *domain.Sheep) erro
 	return r.db.WithContext(ctx).Create(s).Error
 }
 
-func (r *SheepRepository) GetSheepByID(ctx context.Context, userID, id string) (*domain.Sheep, error) {
+func (r *SheepRepository) GetSheepByID(ctx context.Context, userID, id uint) (*domain.Sheep, error) {
 	var s domain.Sheep
 	err := r.db.WithContext(ctx).Where("owner_user_id = ? AND id = ?", userID, id).
 		Preload("Lambings").Preload("Vaccinations").Preload("Treatments").First(&s).Error
@@ -36,13 +36,13 @@ func (r *SheepRepository) GetSheepByID(ctx context.Context, userID, id string) (
 	return &s, err
 }
 
-func (r *SheepRepository) GetAllSheep(ctx context.Context, userID string) ([]domain.Sheep, error) {
+func (r *SheepRepository) GetAllSheep(ctx context.Context, userID uint) ([]domain.Sheep, error) {
 	var list []domain.Sheep
 	err := r.db.WithContext(ctx).Where("owner_user_id = ?", userID).Find(&list).Error
 	return list, err
 }
 
-func (r *SheepRepository) FilterSheep(ctx context.Context, userID string, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
+func (r *SheepRepository) FilterSheep(ctx context.Context, userID uint, gender *string, minAgeDays, maxAgeDays *int) ([]domain.Sheep, error) {
 	var list []domain.Sheep
 	q := r.db.WithContext(ctx).Where("owner_user_id = ?", userID)
 	if gender != nil {
@@ -66,19 +66,19 @@ func (r *SheepRepository) UpdateSheep(ctx context.Context, s *domain.Sheep) erro
 	return r.db.WithContext(ctx).Save(s).Error
 }
 
-func (r *SheepRepository) DeleteSheep(ctx context.Context, userID, id string) error {
+func (r *SheepRepository) DeleteSheep(ctx context.Context, userID, id uint) error {
 	return r.db.WithContext(ctx).Where("owner_user_id = ? AND id = ?", userID, id).Delete(&domain.Sheep{}).Error
 }
 
 // VaccinationRepository
-func (r *SheepRepository) CreateVaccination(ctx context.Context, userID, sheepID string, v domain.Vaccination) error {
+func (r *SheepRepository) CreateVaccination(ctx context.Context, userID, sheepID uint, v domain.Vaccination) error {
 	v.SheepID = 0
 	return r.db.WithContext(ctx).Model(&domain.Sheep{}).
 		Where("owner_user_id = ? AND id = ?", userID, sheepID).
 		Association("Vaccinations").Append(&v)
 }
 
-func (r *SheepRepository) GetVaccinations(ctx context.Context, userID, sheepID string) ([]domain.Vaccination, error) {
+func (r *SheepRepository) GetVaccinations(ctx context.Context, userID, sheepID uint) ([]domain.Vaccination, error) {
 	sheep, err := r.GetSheepByID(ctx, userID, sheepID)
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (r *SheepRepository) GetVaccinations(ctx context.Context, userID, sheepID s
 	return sheep.Vaccinations, nil
 }
 
-func (r *SheepRepository) DeleteVaccination(ctx context.Context, userID, sheepID string, index int) error {
+func (r *SheepRepository) DeleteVaccination(ctx context.Context, userID, sheepID uint, index int) error {
 	sheep, err := r.GetSheepByID(ctx, userID, sheepID)
 	if err != nil {
 		return err
