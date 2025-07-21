@@ -2,10 +2,10 @@ package services
 
 import (
 	"context"
-	"time"
-
+	"log"
 	"sheep_farm_backend_go/internal/application/ports"
 	"sheep_farm_backend_go/internal/domain"
+	"time"
 )
 
 // VaccineService provides use cases for vaccine definitions.
@@ -20,6 +20,15 @@ func NewVaccineService(repo ports.VaccineRepository) *VaccineService {
 
 // CreateVaccine handles the creation of a new vaccine definition.
 func (s *VaccineService) CreateVaccine(ctx context.Context, vaccine *domain.Vaccine) error {
+	// Ensure OwnerUserID is set from context if not already set
+	if vaccine.OwnerUserID == 0 {
+		userID, ok := ctx.Value("userID").(uint)
+		if ok && userID != 0 {
+			vaccine.OwnerUserID = userID
+		}
+
+	}
+	log.Print("Creating vaccine with OwnerUserID:", vaccine.OwnerUserID)
 	return s.repo.CreateVaccine(ctx, vaccine)
 }
 

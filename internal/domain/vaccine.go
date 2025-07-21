@@ -24,7 +24,10 @@ type Vaccination struct {
 
 // Vaccine represents a type of vaccine defined by the user.
 type Vaccine struct {
-	gorm.Model
+	// Ensure this struct has an auto-increment primary key
+	gorm.Model // <-- This line ensures ID is present and auto-incremented
+	// If you do NOT want to use gorm.Model, use:
+	// ID uint `gorm:"primaryKey;autoIncrement"`
 
 	Name           string `json:"name" firestore:"name" gorm:"column:name"`
 	IntervalMonths int    `json:"intervalMonths" firestore:"intervalMonths" gorm:"column:interval_months"`

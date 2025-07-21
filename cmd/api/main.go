@@ -6,8 +6,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/joho/godotenv"
 	"sheep_farm_backend_go/internal/domain"
+
+	"github.com/joho/godotenv"
 
 	"sheep_farm_backend_go/internal/application/services"
 	"sheep_farm_backend_go/internal/infrastructure/external"

@@ -172,6 +172,13 @@ func (r *FirestoreRepository) DeleteSheep(ctx context.Context, userID, sheepID u
 
 // CreateVaccine implements ports.VaccineRepository
 func (r *FirestoreRepository) CreateVaccine(ctx context.Context, vaccine *domain.Vaccine) error {
+	// Ensure OwnerUserID is set from context if not already set
+	if vaccine.OwnerUserID == 0 {
+		userID, ok := ctx.Value("userID").(uint)
+		if ok && userID != 0 {
+			vaccine.OwnerUserID = userID
+		}
+	}
 	if vaccine.OwnerUserID == 0 {
 		return domain.ErrUnauthorized // OwnerUserID is required
 	}

@@ -22,6 +22,13 @@ func NewVaccineRepository(db *gorm.DB) *VaccineRepository {
 }
 
 func (r *VaccineRepository) CreateVaccine(ctx context.Context, v *domain.Vaccine) error {
+	// Ensure OwnerUserID is set from context if not already set
+	if v.OwnerUserID == 0 {
+		userID, ok := ctx.Value("userID").(uint)
+		if ok && userID != 0 {
+			v.OwnerUserID = userID
+		}
+	}
 	return r.db.WithContext(ctx).Create(v).Error
 }
 
