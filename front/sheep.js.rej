@@ -1,0 +1,158 @@
+diff a/front/sheep.js b/front/sheep.js	(rejected hunks)
+@@ -63,107 +63,125 @@ window.editSheep = function (id) {
+       document.getElementById("sheepDob").value = s.dateOfBirth.split("T")[0];
+       document.getElementById("birthWeight").value = s.birthWeight || "";
+       document.getElementById("ear1").value = s.earNumber1;
+       document.getElementById("ear2").value = s.earNumber2 || "";
+       document.getElementById("ear3").value = s.earNumber3 || "";
+       document.getElementById("gen").value = s.fatherGen || "";
+       new bootstrap.Modal(document.getElementById("sheepModal")).show();
+     });
+ };
+ 
+ window.deleteSheep = function (id) {
+   if (!confirm("حذف شود؟")) return;
+   fetch(`${API_BASE}/sheep/${id}`, {
+     method: "DELETE",
+     headers: headersSheep,
+   }).then(() => loadSheep());
+ };
+ 
+ window.showSheep = function (id) {
+   fetch(`${API_BASE}/sheep/${id}`, { headers: headersSheep })
+     .then((res) => res.json())
+     .then((s) => {
+       currentSheep = s;
+       const detail = document.getElementById("sheepDetails");
+       detail.innerHTML = `
+-                <img src="${s.photoUrl || "https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/svg/1f411.svg"}" class="img-thumbnail mb-3" style="max-width:150px">
++                <img src="${s.photoUrl || "lib/twemoji/1f411.svg"}" class="img-thumbnail mb-3" style="max-width:150px">
+                 <div>گوش 1: ${s.earNumber1}</div>
+                 <div>گوش 2: ${s.earNumber2 || ""}</div>
+                 <div>گوش 3: ${s.earNumber3 || ""}</div>
+                 <div>شماره پلاک: ${s.neckNumber || ""}</div>
+                 <div>تاریخ تولد: ${s.dateOfBirth.split("T")[0]}</div>
+                 <div>وزن تولد: ${s.birthWeight}</div>
+                 <div>نژاد: ${s.fatherGen}</div>`;
+       document.getElementById("stateReproduction").value = s.reproductionState;
+       document.getElementById("stateHealth").value = s.healthState;
+       fetch(`${API_BASE}/vaccines`, { headers: headersSheep })
+         .then((r) => r.json())
+         .then((vlist) => {
+           const select = document.getElementById("detailVaccine");
+           select.innerHTML = "";
+           vlist.forEach((v) => {
+             const opt = document.createElement("option");
+             opt.value = v.id;
+             opt.textContent = v.name;
+             select.appendChild(opt);
+           });
+           const vaccList = document.getElementById("vaccList");
+           vaccList.innerHTML = "";
+-          (s.vaccinations || []).forEach((v, i) => {
+-            const tr = document.createElement("tr");
+-            tr.innerHTML = `
+-              <td>${v.vaccine}</td>
+-              <td>${v.date.split("T")[0]}</td>
+-              <td>${v.vaccinator || ""}</td>
+-              <td>${v.description || ""}</td>
+-              <td><button class="btn btn-sm btn-danger" onclick="deleteVacc(${i})">حذف</button></td>`;
+-            vaccList.appendChild(tr);
+-          });
++          const vaccinations = s.vaccinations || [];
++          if (vaccinations.length === 0) {
++            vaccList.innerHTML =
++              '<tr><td colspan="5" class="text-center text-muted">موردی ثبت نشده</td></tr>';
++          } else {
++            vaccinations.forEach((v, i) => {
++              const tr = document.createElement("tr");
++              tr.innerHTML = `
++                <td>${v.vaccine}</td>
++                <td>${v.date.split("T")[0]}</td>
++                <td>${v.vaccinator || ""}</td>
++                <td>${v.description || ""}</td>
++                <td><button class="btn btn-sm btn-danger" onclick="deleteVacc(${i})">حذف</button></td>`;
++              vaccList.appendChild(tr);
++            });
++          }
+           const treatList = document.getElementById("treatList");
+           treatList.innerHTML = "";
+-          (s.treatments || []).forEach((t, i) => {
+-            const tr = document.createElement("tr");
+-            tr.innerHTML = `
+-              <td>${t.diseaseDescription}</td>
+-              <td>${t.treatDescription}</td>
+-              <td>${t.date.split("T")[0]}</td>
+-              <td><button class="btn btn-sm btn-danger" onclick="deleteTreat(${i})">حذف</button></td>`;
+-            treatList.appendChild(tr);
+-          });
++          const treatments = s.treatments || [];
++          if (treatments.length === 0) {
++            treatList.innerHTML =
++              '<tr><td colspan="4" class="text-center text-muted">موردی ثبت نشده</td></tr>';
++          } else {
++            treatments.forEach((t, i) => {
++              const tr = document.createElement("tr");
++              tr.innerHTML = `
++                <td>${t.diseaseDescription}</td>
++                <td>${t.treatDescription}</td>
++                <td>${t.date.split("T")[0]}</td>
++                <td><button class="btn btn-sm btn-danger" onclick="deleteTreat(${i})">حذف</button></td>`;
++              treatList.appendChild(tr);
++            });
++          }
+           const lambList = document.getElementById("lambList");
+           lambList.innerHTML = "";
+-          (s.lambings || []).forEach((l, i) => {
+-            const tr = document.createElement("tr");
+-            tr.innerHTML = `
+-              <td>${l.date.split("T")[0]}</td>
+-              <td>${l.numBorn}</td>
+-              <td>${l.numMaleBorn}</td>
+-              <td>${l.numFemaleBorn}</td>
+-              <td>${l.numDead}</td>
+-              <td><button class="btn btn-sm btn-danger" onclick="deleteLamb(${i})">حذف</button></td>`;
+-            lambList.appendChild(tr);
+-          });
++          const lambings = s.lambings || [];
++          if (lambings.length === 0) {
++            lambList.innerHTML =
++              '<tr><td colspan="6" class="text-center text-muted">موردی ثبت نشده</td></tr>';
++          } else {
++            lambings.forEach((l, i) => {
++              const tr = document.createElement("tr");
++              tr.innerHTML = `
++                <td>${l.date.split("T")[0]}</td>
++                <td>${l.numBorn}</td>
++                <td>${l.numMaleBorn}</td>
++                <td>${l.numFemaleBorn}</td>
++                <td>${l.numDead}</td>
++                <td><button class="btn btn-sm btn-danger" onclick="deleteLamb(${i})">حذف</button></td>`;
++              lambList.appendChild(tr);
++            });
++          }
+           bootstrap.Modal.getOrCreateInstance(
+             document.getElementById("detailModal"),
+           ).show();
+         });
+     });
+ };
+ 
+ document.getElementById("stateForm").addEventListener("submit", (e) => {
+   e.preventDefault();
+   if (!currentSheep) return;
+   fetch(`${API_BASE}/sheep/${currentSheep.id}`, {
+     method: "PUT",
+     headers: headersSheep,
+     body: JSON.stringify({
+       reproductionState: document.getElementById("stateReproduction").value,
+       healthState: document.getElementById("stateHealth").value,
+     }),
+   }).then(() => {
+     bootstrap.Modal.getInstance(document.getElementById("detailModal")).hide();
+     loadSheep();
+   });
+ });
+ 
+ document.getElementById("treatmentForm").addEventListener("submit", (e) => {
+   e.preventDefault();
