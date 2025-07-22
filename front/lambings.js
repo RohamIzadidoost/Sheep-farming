@@ -16,7 +16,7 @@ function loadLambings() {
       tbodyL.innerHTML = "";
       list.forEach((l) => {
         const tr = document.createElement("tr");
-        tr.innerHTML = `<td>${l.sheepEar || ""}</td><td>${l.date}</td><td>${l.numBorn}</td><td>${(l.sexes || []).join(",")}</td><td>${l.numDead}</td>`;
+        tr.innerHTML = `<td>${l.sheepEar || ""}</td><td>${DateConverter(l.date)}</td><td>${l.numBorn}</td><td>نر:${l.numMaleBorn}, ماده:${l.numFemaleBorn}</td><td>${l.numDead}</td>`;
         tbodyL.appendChild(tr);
       });
     });

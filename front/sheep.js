@@ -1,3 +1,10 @@
+import moment from "moment-jalaali";
+moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
+
+function DateConverter(miladiDate) {
+  return `${moment(miladiDate).format("jYYYY/jMM/jDD")}`;
+}
+
 const tokenSheep = localStorage.getItem("token");
 if (!tokenSheep) {
   window.location.href = "index.html";
@@ -33,6 +40,8 @@ function loadSheep() {
       tableBody.innerHTML = "";
       list.forEach((s) => {
         const tr = document.createElement("tr");
+        // Use DateConverter for Jalali date display
+        const dobJalali = DateConverter(s.dateOfBirth);
         const diffMs = Date.now() - new Date(s.dateOfBirth).getTime();
         const years = Math.floor(diffMs / (365 * 24 * 60 * 60 * 1000));
         const months = Math.floor(
@@ -43,7 +52,7 @@ function loadSheep() {
                     <td>${s.earNumber1}</td>
                     <td>${s.earNumber2 || ""}</td>
                     <td>${s.earNumber3 || ""}</td>
-                    <td>${age}</td>
+                    <td>${dobJalali}</td>
                     <td>${s.gender === "male" ? "نر" : "ماده"}</td>
                     <td>${s.reproductionState}</td>
                     <td>${s.healthState}</td>
@@ -90,7 +99,7 @@ window.showSheep = function (id) {
                 <div>گوش 2: ${s.earNumber2 || ""}</div>
                 <div>گوش 3: ${s.earNumber3 || ""}</div>
                 <div>شماره پلاک: ${s.neckNumber || ""}</div>
-                <div>تاریخ تولد: ${s.dateOfBirth.split("T")[0]}</div>
+                <div>تاریخ تولد: ${DateConverter(s.dateOfBirth)}</div>
                 <div>وزن تولد: ${s.birthWeight}</div>
                 <div>نژاد: ${s.fatherGen}</div>`;
       document.getElementById("stateReproduction").value = s.reproductionState;
@@ -110,21 +119,21 @@ window.showSheep = function (id) {
           vaccList.innerHTML = "";
           (s.vaccinations || []).forEach((v, i) => {
             const li = document.createElement("li");
-            li.innerHTML = `${v.vaccine} - ${v.date.split("T")[0]} <button class="btn btn-sm btn-danger ms-2" onclick="deleteVacc(${i})">حذف</button>`;
+            li.innerHTML = `${v.vaccine} - ${DateConverter(v.date)} <button class="btn btn-sm btn-danger ms-2" onclick="deleteVacc(${i})">حذف</button>`;
             vaccList.appendChild(li);
           });
           const treatList = document.getElementById("treatList");
           treatList.innerHTML = "";
           (s.treatments || []).forEach((t, i) => {
             const li = document.createElement("li");
-            li.innerHTML = `${t.diseaseDescription} - ${t.date.split("T")[0]} <button class="btn btn-sm btn-danger ms-2" onclick="deleteTreat(${i})">حذف</button>`;
+            li.innerHTML = `${t.diseaseDescription} - ${DateConverter(t.date)} <button class="btn btn-sm btn-danger ms-2" onclick="deleteTreat(${i})">حذف</button>`;
             treatList.appendChild(li);
           });
           const lambList = document.getElementById("lambList");
           lambList.innerHTML = "";
           (s.lambings || []).forEach((l, i) => {
             const li = document.createElement("li");
-            li.innerHTML = `${l.date.split("T")[0]} - ${l.numBorn} (نر: ${l.numMaleBorn}, ماده: ${l.numFemaleBorn}, مرده: ${l.numDead}) <button class="btn btn-sm btn-danger ms-2" onclick="deleteLamb(${i})">حذف</button>`;
+            li.innerHTML = `${DateConverter(l.date)} - ${l.numBorn} (نر: ${l.numMaleBorn}, ماده: ${l.numFemaleBorn}, مرده: ${l.numDead}) <button class="btn btn-sm btn-danger ms-2" onclick="deleteLamb(${i})">حذف</button>`;
             lambList.appendChild(li);
           });
           bootstrap.Modal.getOrCreateInstance(
@@ -214,7 +223,7 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   const body = JSON.stringify({
     gender: document.getElementById("sheepGender").value,
-    dateOfBirth: document.getElementById("sheepDob").value,
+    dateOfBirth: toGregorianStr(document.getElementById("sheepDob").value),
     birthWeight: parseFloat(document.getElementById("birthWeight").value) || 0,
     earNumber1: document.getElementById("ear1").value,
     earNumber2: document.getElementById("ear2").value,

@@ -28,7 +28,7 @@ function loadVaccinations() {
                 sheepSelect.appendChild(opt);
                 (s.vaccinations || []).forEach(v => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${s.earNumber1}</td><td>${v.vaccine}</td><td>${v.date ? v.date.split('T')[0] : ''}</td><td>${v.vaccinator}</td><td>${v.description || ''}</td>`;
+                    tr.innerHTML = `<td>${s.earNumber1}</td><td>${v.vaccine}</td><td>${DateConverter(v.date)}</td><td>${v.vaccinator}</td><td>${v.description || ''}</td>`;
                     tableVacc.appendChild(tr);
                 });
             });

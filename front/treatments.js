@@ -14,7 +14,7 @@ function loadTreatments() {
             list.forEach(s => {
                 (s.treatments || []).forEach(t => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${s.earNumber1}</td><td>${t.diseaseDescription}</td><td>${t.treatDescription}</td><td>${t.date ? t.date.split('T')[0] : ''}</td>`;
+                    tr.innerHTML = `<td>${s.earNumber1}</td><td>${t.diseaseDescription}</td><td>${t.treatDescription}</td><td>${DateConverter(t.date)}</td>`;
                     tableTr.appendChild(tr);
                 });
             });

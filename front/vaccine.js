@@ -14,7 +14,7 @@ function loadVaccines() {
             tableVax.innerHTML = '';
             list.forEach(v => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${v.sheepID}</td><td>${v.name}</td><td>${v.date ? v.date.split('T')[0] : ''}</td><td>${v.nextDose ? v.nextDose.split('T')[0] : ''}</td><td>${v.description || ''}</td>`;
+                tr.innerHTML = `<td>${v.sheepID}</td><td>${v.name}</td><td>${DateConverter(v.date)}</td><td>${DateConverter(v.nextDose)}</td><td>${v.description || ''}</td>`;
                 tableVax.appendChild(tr);
             });
         });
@@ -25,8 +25,8 @@ formVax.addEventListener('submit', e => {
     const body = JSON.stringify({
         name: document.getElementById('vaccineName').value,
         sheepID: document.getElementById('vaccineSheep').value,
-        date: document.getElementById('vaccineDate').value,
-        nextDose: document.getElementById('vaccineNext').value,
+        date: toGregorianStr(document.getElementById('vaccineDate').value),
+        nextDose: toGregorianStr(document.getElementById('vaccineNext').value),
         description: document.getElementById('vaccineNote').value
     });
     fetch(`${API_BASE}/vaccines`, { method: 'POST', headers: headersVax, body })

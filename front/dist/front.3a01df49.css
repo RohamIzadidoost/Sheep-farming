@@ -1,0 +1,33 @@
+body {
+  background: url("https://cdn.jsdelivr.net/gh/twitter/twemoji/assets/svg/1f411.svg") 0 100% / 200px no-repeat;
+  min-height: 100vh;
+  font-family: Vazirmatn, sans-serif;
+}
+
+.hero-space {
+  padding-top: 100px;
+  padding-bottom: 60px;
+}
+
+.card {
+  background-color: #fffffff2;
+  border: none;
+  box-shadow: 0 .5rem 1rem #00000026;
+}
+
+.btn-primary {
+  transition: transform .2s ease-in-out;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+}
+
+.navbar-brand {
+  font-weight: bold;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f0f8ff;
+}
+/*# sourceMappingURL=front.3a01df49.css.map */

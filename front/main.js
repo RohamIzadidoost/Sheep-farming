@@ -1,3 +1,18 @@
+import moment from "moment-jalaali";
+
+moment.loadPersian({ dialect: "persian-modern", usePersianDigits: true });
+console.log(moment().format("jYYYY/jMM/jDD"));
+
+window.DateConverter = function(miladiDate) {
+  return moment(miladiDate).format("jYYYY/jMM/jDD");
+};
+
+window.toGregorianStr = function(jdate) {
+  const [jy, jm, jd] = jdate.split(/[-\/]/).map(Number);
+  const g = window.jalaali.toGregorian(jy, jm, jd);
+  return `${g.gy}-${String(g.gm).padStart(2, "0")}-${String(g.gd).padStart(2, "0")}`;
+};
+
 const statusEl = document.getElementById('status');
 const loginForm = document.getElementById('loginForm');
 const loginMessage = document.getElementById('loginMessage');
