@@ -21,7 +21,7 @@ func NewConsoleNotifier() *ConsoleNotifier {
 
 // SendReminder implements ports.ReminderNotifier.
 func (n *ConsoleNotifier) SendReminder(ctx context.Context, reminder domain.Reminder) error {
-	fmt.Printf("--- REMINDER to User %s ---\n", reminder.OwnerUserID)
+	fmt.Printf("--- REMINDER to User %d ---\n", reminder.OwnerUserID)
 	fmt.Printf("Type: %s\n", reminder.Type)
 	fmt.Printf("Sheep: %s\n", reminder.SheepName)
 	if reminder.VaccineName != "" {
