@@ -118,23 +118,38 @@ window.showSheep = function (id) {
           const vaccList = document.getElementById("vaccList");
           vaccList.innerHTML = "";
           (s.vaccinations || []).forEach((v, i) => {
-            const li = document.createElement("li");
-            li.innerHTML = `${v.vaccine} - ${DateConverter(v.date)} <button class="btn btn-sm btn-danger ms-2" onclick="deleteVacc(${i})">حذف</button>`;
-            vaccList.appendChild(li);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${v.vaccine}</td>
+              <td>${v.date.split("T")[0]}</td>
+              <td>${v.vaccinator || ""}</td>
+              <td>${v.description || ""}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="deleteVacc(${i})">حذف</button></td>`;
+            vaccList.appendChild(tr);
           });
           const treatList = document.getElementById("treatList");
           treatList.innerHTML = "";
           (s.treatments || []).forEach((t, i) => {
-            const li = document.createElement("li");
-            li.innerHTML = `${t.diseaseDescription} - ${DateConverter(t.date)} <button class="btn btn-sm btn-danger ms-2" onclick="deleteTreat(${i})">حذف</button>`;
-            treatList.appendChild(li);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${t.diseaseDescription}</td>
+              <td>${t.treatDescription}</td>
+              <td>${t.date.split("T")[0]}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="deleteTreat(${i})">حذف</button></td>`;
+            treatList.appendChild(tr);
           });
           const lambList = document.getElementById("lambList");
           lambList.innerHTML = "";
           (s.lambings || []).forEach((l, i) => {
-            const li = document.createElement("li");
-            li.innerHTML = `${DateConverter(l.date)} - ${l.numBorn} (نر: ${l.numMaleBorn}, ماده: ${l.numFemaleBorn}, مرده: ${l.numDead}) <button class="btn btn-sm btn-danger ms-2" onclick="deleteLamb(${i})">حذف</button>`;
-            lambList.appendChild(li);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td>${l.date.split("T")[0]}</td>
+              <td>${l.numBorn}</td>
+              <td>${l.numMaleBorn}</td>
+              <td>${l.numFemaleBorn}</td>
+              <td>${l.numDead}</td>
+              <td><button class="btn btn-sm btn-danger" onclick="deleteLamb(${i})">حذف</button></td>`;
+            lambList.appendChild(tr);
           });
           bootstrap.Modal.getOrCreateInstance(
             document.getElementById("detailModal"),
