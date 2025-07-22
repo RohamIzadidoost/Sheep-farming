@@ -26,6 +26,7 @@ func (r *LambingRepository) AddLambing(ctx context.Context, userID, sheepID uint
 		return err
 	}
 	l.SheepID = sheep.Model.ID
+	// l.NumMaleBorn and l.NumFemaleBorn should be set by caller
 	return r.db.WithContext(ctx).Create(&l).Error
 }
 
@@ -47,6 +48,7 @@ func (r *LambingRepository) UpdateLambing(ctx context.Context, userID, sheepID u
 		return domain.ErrNotFound
 	}
 	l.ID = lambings[index].ID
+	// l.NumMaleBorn and l.NumFemaleBorn should be set by caller
 	return r.db.WithContext(ctx).Model(&domain.Lambing{}).Where("id = ?", l.ID).Updates(l).Error
 }
 

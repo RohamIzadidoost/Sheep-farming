@@ -124,7 +124,7 @@ window.showSheep = function (id) {
           lambList.innerHTML = "";
           (s.lambings || []).forEach((l, i) => {
             const li = document.createElement("li");
-            li.innerHTML = `${l.date.split("T")[0]} - ${l.numBorn} <button class="btn btn-sm btn-danger ms-2" onclick="deleteLamb(${i})">حذف</button>`;
+            li.innerHTML = `${l.date.split("T")[0]} - ${l.numBorn} (نر: ${l.numMaleBorn}, ماده: ${l.numFemaleBorn}, مرده: ${l.numDead}) <button class="btn btn-sm btn-danger ms-2" onclick="deleteLamb(${i})">حذف</button>`;
             lambList.appendChild(li);
           });
           bootstrap.Modal.getOrCreateInstance(
@@ -191,17 +191,14 @@ document.getElementById("lambForm").addEventListener("submit", (e) => {
   e.preventDefault();
   if (!currentSheep) return;
   const males = parseInt(document.getElementById("lambMale").value, 10) || 0;
-  const females =
-    parseInt(document.getElementById("lambFemale").value, 10) || 0;
+  const females = parseInt(document.getElementById("lambFemale").value, 10) || 0;
   const numDead = parseInt(document.getElementById("lambDead").value, 10) || 0;
-  const sexes = [];
-  for (let i = 0; i < males; i++) sexes.push("male");
-  for (let i = 0; i < females; i++) sexes.push("female");
   const body = JSON.stringify({
     date: toGregorianStr(document.getElementById("lambDate").value),
     numBorn: males + females,
-    sexes,
-    numDead,
+    numMaleBorn: males,
+    numFemaleBorn: females,
+    numDead: numDead,
   });
   fetch(`${API_BASE}/sheep/${currentSheep.id}/lambings`, {
     method: "POST",

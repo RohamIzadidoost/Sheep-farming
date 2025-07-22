@@ -45,10 +45,11 @@ func (h *LambingHandler) List(w http.ResponseWriter, r *http.Request) {
 	var resp []dto.LambingDTO
 	for _, l := range list {
 		resp = append(resp, dto.LambingDTO{
-			Date:    dto.DateOnly(l.Date),
-			NumBorn: l.NumBorn,
-			Sexes:   l.Sexes,
-			NumDead: l.NumDead,
+			Date:          dto.DateOnly(l.Date),
+			NumBorn:       l.NumBorn,
+			NumMaleBorn:   l.NumMaleBorn,
+			NumFemaleBorn: l.NumFemaleBorn,
+			NumDead:       l.NumDead,
 		})
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -62,18 +63,23 @@ func (h *LambingHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID uint `json:"sheepId"`
-		dto.LambingDTO
+		SheepID       uint         `json:"sheepId"`
+		Date          dto.DateOnly `json:"date"`
+		NumBorn       int          `json:"numBorn"`
+		NumMaleBorn   int          `json:"numMaleBorn"`
+		NumFemaleBorn int          `json:"numFemaleBorn"`
+		NumDead       int          `json:"numDead"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
 		return
 	}
 	err = h.service.Create(r.Context(), userID, req.SheepID, domain.Lambing{
-		Date:    time.Time(req.LambingDTO.Date),
-		NumBorn: req.NumBorn,
-		Sexes:   req.Sexes,
-		NumDead: req.NumDead,
+		Date:          time.Time(req.Date),
+		NumBorn:       req.NumBorn,
+		NumMaleBorn:   req.NumMaleBorn,
+		NumFemaleBorn: req.NumFemaleBorn,
+		NumDead:       req.NumDead,
 	})
 	if err != nil {
 		if err == domain.ErrNotFound {
@@ -93,19 +99,24 @@ func (h *LambingHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req struct {
-		SheepID uint `json:"sheepId"`
-		Index   int  `json:"index"`
-		dto.LambingDTO
+		SheepID       uint         `json:"sheepId"`
+		Index         int          `json:"index"`
+		Date          dto.DateOnly `json:"date"`
+		NumBorn       int          `json:"numBorn"`
+		NumMaleBorn   int          `json:"numMaleBorn"`
+		NumFemaleBorn int          `json:"numFemaleBorn"`
+		NumDead       int          `json:"numDead"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
 		return
 	}
 	err = h.service.Update(r.Context(), userID, req.SheepID, req.Index, domain.Lambing{
-		Date:    time.Time(req.LambingDTO.Date),
-		NumBorn: req.NumBorn,
-		Sexes:   req.Sexes,
-		NumDead: req.NumDead,
+		Date:          time.Time(req.Date),
+		NumBorn:       req.NumBorn,
+		NumMaleBorn:   req.NumMaleBorn,
+		NumFemaleBorn: req.NumFemaleBorn,
+		NumDead:       req.NumDead,
 	})
 	if err != nil {
 		if err == domain.ErrNotFound {

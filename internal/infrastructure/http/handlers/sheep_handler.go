@@ -224,10 +224,11 @@ func (h *SheepHandler) UpdateSheep(w http.ResponseWriter, r *http.Request) {
 		domainLambings := make([]domain.Lambing, len(*req.Lambings))
 		for i, l := range *req.Lambings {
 			domainLambings[i] = domain.Lambing{
-				Date:    time.Time(l.Date),
-				NumBorn: l.NumBorn,
-				Sexes:   l.Sexes,
-				NumDead: l.NumDead,
+				Date:          time.Time(l.Date),
+				NumBorn:       l.NumBorn,
+				NumMaleBorn:   l.NumMaleBorn,
+				NumFemaleBorn: l.NumFemaleBorn,
+				NumDead:       l.NumDead,
 			}
 		}
 		existingSheep.Lambings = domainLambings
@@ -344,7 +345,13 @@ func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
 	idStr := vars["id"]
 	sheepID, _ := strconv.ParseUint(idStr, 10, 64)
 
-	var req dto.LambingDTO
+	var req struct {
+		Date          dto.DateOnly `json:"date"`
+		NumBorn       int          `json:"numBorn"`
+		NumMaleBorn   int          `json:"numMaleBorn"`
+		NumFemaleBorn int          `json:"numFemaleBorn"`
+		NumDead       int          `json:"numDead"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
 		return
@@ -357,10 +364,11 @@ func (h *SheepHandler) AddLambing(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.sheepService.AddLambing(r.Context(), userID, uint(sheepID), domain.Lambing{
-		Date:    time.Time(req.Date),
-		NumBorn: req.NumBorn,
-		Sexes:   req.Sexes,
-		NumDead: req.NumDead,
+		Date:          time.Time(req.Date),
+		NumBorn:       req.NumBorn,
+		NumMaleBorn:   req.NumMaleBorn,
+		NumFemaleBorn: req.NumFemaleBorn,
+		NumDead:       req.NumDead,
 	})
 	if err != nil {
 		if err == domain.ErrNotFound {
@@ -516,7 +524,13 @@ func (h *SheepHandler) UpdateLambing(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
 		return
 	}
-	var req dto.LambingDTO
+	var req struct {
+		Date          dto.DateOnly `json:"date"`
+		NumBorn       int          `json:"numBorn"`
+		NumMaleBorn   int          `json:"numMaleBorn"`
+		NumFemaleBorn int          `json:"numFemaleBorn"`
+		NumDead       int          `json:"numDead"`
+	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, domain.ErrInvalidInput.Error(), http.StatusBadRequest)
 		return
@@ -527,10 +541,11 @@ func (h *SheepHandler) UpdateLambing(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	err = h.sheepService.UpdateLambing(r.Context(), userID, uint(sheepID), index, domain.Lambing{
-		Date:    time.Time(req.Date),
-		NumBorn: req.NumBorn,
-		Sexes:   req.Sexes,
-		NumDead: req.NumDead,
+		Date:          time.Time(req.Date),
+		NumBorn:       req.NumBorn,
+		NumMaleBorn:   req.NumMaleBorn,
+		NumFemaleBorn: req.NumFemaleBorn,
+		NumDead:       req.NumDead,
 	})
 	if err != nil {
 		if err == domain.ErrNotFound {

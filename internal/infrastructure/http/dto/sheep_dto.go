@@ -13,10 +13,11 @@ type VaccinationDTO struct {
 }
 
 type LambingDTO struct {
-	Date    DateOnly `json:"date"`
-	NumBorn int      `json:"numBorn"`
-	Sexes   []string `json:"sexes"`
-	NumDead int      `json:"numDead"`
+	Date          DateOnly `json:"date"`
+	NumBorn       int      `json:"numBorn"`
+	NumMaleBorn   int      `json:"numMaleBorn"`
+	NumFemaleBorn int      `json:"numFemaleBorn"`
+	NumDead       int      `json:"numDead"`
 }
 
 type TreatmentDTO struct {
@@ -112,10 +113,11 @@ func (req *CreateSheepRequest) ToDomain(ownerUserID uint) *domain.Sheep {
 	domainLambings := make([]domain.Lambing, len(req.Lambings))
 	for i, l := range req.Lambings {
 		domainLambings[i] = domain.Lambing{
-			Date:    time.Time(l.Date),
-			NumBorn: l.NumBorn,
-			Sexes:   l.Sexes,
-			NumDead: l.NumDead,
+			Date:          time.Time(l.Date),
+			NumBorn:       l.NumBorn,
+			NumMaleBorn:   l.NumMaleBorn,
+			NumFemaleBorn: l.NumFemaleBorn,
+			NumDead:       l.NumDead,
 		}
 	}
 
@@ -181,10 +183,11 @@ func ToSheepResponse(s *domain.Sheep) *SheepResponse {
 	responseLambings := make([]LambingDTO, len(s.Lambings))
 	for i, l := range s.Lambings {
 		responseLambings[i] = LambingDTO{
-			Date:    DateOnly(l.Date),
-			NumBorn: l.NumBorn,
-			Sexes:   l.Sexes,
-			NumDead: l.NumDead,
+			Date:          DateOnly(l.Date),
+			NumBorn:       l.NumBorn,
+			NumMaleBorn:   l.NumMaleBorn,
+			NumFemaleBorn: l.NumFemaleBorn,
+			NumDead:       l.NumDead,
 		}
 	}
 
