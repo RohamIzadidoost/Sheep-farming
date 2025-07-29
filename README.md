@@ -1,6 +1,6 @@
 # Sheep Farming Management System
 
-This repository contains a Go backend and a simple HTML/JavaScript frontend for managing sheep information such as births, vaccinations and treatments. The project is primarily in Persian.
+This repository contains a Go backend and a React frontend for managing sheep information such as births, vaccinations and treatments. The project is primarily in Persian.
 
 ## Requirements
 
@@ -28,16 +28,27 @@ This will start the application and a PostgreSQL database.
 
 ## Running the Frontend
 
-The `front` directory contains plain HTML files. They rely only on local assets (Bootstrap, icons, fonts and the Jalaali calendar library) so no CDN access is required.
+The `front-react` directory contains a React application which replaces the
+legacy static pages in `front`. All functionality such as login, dashboard,
+sheep management and vaccination screens has been migrated to React.
 
-You can serve the files using Python:
+```bash
+cd front-react
+npm install
+npm start
+```
+
+This will start the development server (usually on `http://localhost:3000`). The
+React app expects the backend API on `http://localhost:8080/api/v1` by default.
+
+The legacy static HTML files are still available under the `front` folder and can be served with Python:
 
 ```bash
 cd front
 python3 -m http.server 5500
 ```
 
-Then open `http://localhost:5500/index.html` in your browser.
+Then open `http://localhost:5500/index.html` in your browser if you need the older UI.
 
 ### Parcel
 
