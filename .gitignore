@@ -23,6 +23,9 @@ sheep-farm-app-firebase-adminsdk*.json
 
 coverage.txt
 profile.out
+node_modules/
+front/node_modules/
+front-react/node_modules/
 
 # Node.js dependencies
 node_modules/
@@ -42,3 +45,4 @@ dist/
 # Parcel or other cache folders
 .parcel-cache/
 .cache/
+
