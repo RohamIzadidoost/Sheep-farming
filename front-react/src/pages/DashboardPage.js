@@ -17,10 +17,13 @@ export default function DashboardPage() {
         let birthsThisMonth = 0;
         const now = new Date();
         list.forEach(s => {
-          (s.lambings || []).forEach(l => {
-            const d = new Date(l.date);
-            if(d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) birthsThisMonth += l.numBorn;
-          });
+          if (Array.isArray(s.lambings)) {
+            s.lambings.forEach(l => {
+              const d = new Date(l.date);
+              if (d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()) 
+                birthsThisMonth += l.numBorn;
+            });
+          }
         });
         setStats([
           { label: 'تعداد کل', value: total, icon: 'bi bi-emoji-smile' },
@@ -35,10 +38,14 @@ export default function DashboardPage() {
       .then(res => res.json())
       .then(list => {
         const groups = {};
-        list.forEach(r => {
-          if(!groups[r.type]) groups[r.type] = [];
-          groups[r.type].push(r.message);
-        });
+        if (Array.isArray(list)) {
+          list.forEach(r => {
+            if (r && r.type) {
+              if (!groups[r.type]) groups[r.type] = [];
+              groups[r.type].push(r.message);
+            }
+          });
+        }
         setReminders(groups);
       });
   }, []);
@@ -68,7 +75,7 @@ export default function DashboardPage() {
               <div className="card-body">
                 <strong>{k}</strong>
                 <ul className="mb-0">
-                  {reminders[k].map((m,i) => <li key={i}>{m}</li>)}
+                  {Array.isArray(reminders[k]) && reminders[k].map((m,i) => <li key={i}>{m}</li>)}
                 </ul>
               </div>
             </div>
