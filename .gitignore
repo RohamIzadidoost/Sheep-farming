@@ -26,3 +26,23 @@ profile.out
 node_modules/
 front/node_modules/
 front-react/node_modules/
+
+# Node.js dependencies
+node_modules/
+
+# Vite output (or other frontend build tools)
+dist/
+
+# IDE and system files
+.vscode/
+.DS_Store
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Parcel or other cache folders
+.parcel-cache/
+.cache/
+
