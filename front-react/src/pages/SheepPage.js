@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import NavBar from '../components/NavBar';
+import JalaliDatePicker from '../components/JalaliDatePicker';
 import { apiFetch } from '../utils/api';
-import { toJalali, toGregorian } from '../utils/jdate';
+import { toJalali } from '../utils/jdate';
 
 export default function SheepPage() {
   const [list, setList] = useState([]);
@@ -28,7 +29,7 @@ export default function SheepPage() {
     e.preventDefault();
     const body = JSON.stringify({
       gender: form.gender,
-      dateOfBirth: toGregorian(form.dob),
+      dateOfBirth: form.dob,
       birthWeight: parseFloat(form.weight) || 0,
       earNumber1: form.ear1,
       earNumber2: form.ear2,
@@ -96,7 +97,7 @@ export default function SheepPage() {
           <h5 className="mb-3">{editingId ? 'ویرایش گوسفند' : 'افزودن گوسفند'}</h5>
           <div className="row g-2">
             <div className="col-md-4"><select className="form-select" value={form.gender} onChange={e=>setForm({...form,gender:e.target.value})}><option value="male">نر</option><option value="female">ماده</option></select></div>
-            <div className="col-md-4"><input type="date" className="form-control" value={form.dob} onChange={e=>setForm({...form,dob:e.target.value})} required /></div>
+              <div className="col-md-4"><JalaliDatePicker value={form.dob} onChange={d=>setForm({...form,dob:d})} /></div>
             <div className="col-md-4"><input type="number" step="0.1" className="form-control" value={form.weight} onChange={e=>setForm({...form,weight:e.target.value})} placeholder="وزن تولد" /></div>
             <div className="col-md-4"><input className="form-control" value={form.ear1} onChange={e=>setForm({...form,ear1:e.target.value})} placeholder="گوش 1" required/></div>
             <div className="col-md-4"><input className="form-control" value={form.ear2} onChange={e=>setForm({...form,ear2:e.target.value})} placeholder="گوش 2" /></div>

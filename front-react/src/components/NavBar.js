@@ -16,6 +16,7 @@ export default function NavBar() {
             <li className="nav-item"><Link className="nav-link" to="/vaccinations">واکسیناسیون</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/vaccines">واکسن‌ها</Link></li>
             <li className="nav-item"><Link className="nav-link" to="/treatments">درمان‌ها</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/lambings">زایش‌ها</Link></li>
           </ul>
         </div>
       </div>
