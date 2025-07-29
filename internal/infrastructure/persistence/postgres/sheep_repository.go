@@ -57,7 +57,7 @@ func (r *SheepRepository) FilterSheep(ctx context.Context, userID uint, gender *
 			q = q.Where("date_of_birth >= ?", now.AddDate(0, 0, -*maxAgeDays))
 		}
 	}
-	err := q.Find(&list).Error
+	err := q.Preload("Lambings").Preload("Vaccinations").Preload("Treatments").Find(&list).Error
 	return list, err
 }
 

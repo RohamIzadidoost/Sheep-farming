@@ -21,8 +21,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="container d-flex align-items-center justify-content-center vh-100">
-      <form onSubmit={submit} className="card p-4 shadow" style={{minWidth: '320px'}}>
+    <div className="login-background d-flex align-items-center justify-content-center vh-100">
+      <form onSubmit={submit} className="login-card p-4 shadow" style={{minWidth: '320px'}}>
         <h4 className="mb-3 text-center">ورود</h4>
         <input className="form-control mb-2" placeholder="ایمیل" value={email} onChange={e => setEmail(e.target.value)} />
         <input type="password" className="form-control mb-2" placeholder="گذرواژه" value={password} onChange={e => setPassword(e.target.value)} />

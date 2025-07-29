@@ -5,3 +5,14 @@ body {
   direction: rtl;
   text-align: right;
 }
+
+.login-background {
+  background-image: url('https://source.unsplash.com/featured/?sheep');
+  background-size: cover;
+  background-position: center;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 12px;
+}
