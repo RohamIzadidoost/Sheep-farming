@@ -23,3 +23,22 @@ sheep-farm-app-firebase-adminsdk*.json
 
 coverage.txt
 profile.out
+
+# Node.js dependencies
+node_modules/
+
+# Vite output (or other frontend build tools)
+dist/
+
+# IDE and system files
+.vscode/
+.DS_Store
+*.log
+
+# Environment variables
+.env
+.env.local
+
+# Parcel or other cache folders
+.parcel-cache/
+.cache/
