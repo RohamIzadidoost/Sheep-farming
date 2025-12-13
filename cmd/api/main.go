@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
-	"strconv"
-
-	"sheep_farm_backend_go/internal/domain"
 
 	"github.com/joho/godotenv"
 
 	"sheep_farm_backend_go/internal/application/services"
+	"sheep_farm_backend_go/internal/domain"
+	"sheep_farm_backend_go/internal/infrastructure/config"
 	"sheep_farm_backend_go/internal/infrastructure/external"
 	"sheep_farm_backend_go/internal/infrastructure/http"
 	postgres "sheep_farm_backend_go/internal/infrastructure/persistence/postgres"
@@ -24,13 +22,13 @@ func main() {
 		log.Println("No .env file found, using environment variables directly.")
 	}
 
-	// --- 1. Initialize PostgreSQL ---
-
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		log.Fatal("DATABASE_URL not set")
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("failed to load configuration: %v", err)
 	}
-	db, err := postgres.New(dsn)
+
+	// --- 1. Initialize PostgreSQL ---
+	db, err := postgres.New(cfg.DatabaseURL)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
 	}
@@ -54,8 +52,8 @@ func main() {
 	reminderNotifier := external.NewConsoleNotifier()
 
 	// --- 4. Initialize Application Layer (Services/Use Cases) ---
-	userService := services.NewUserService(userRepo)              // NEW: Initialize UserService first
-	authService := services.NewAuthService(userRepo, userService) // UPDATED: Pass userService to AuthService
+	userService := services.NewUserService(userRepo)                             // NEW: Initialize UserService first
+	authService := services.NewAuthService(userRepo, userService, cfg.JWTSecret) // UPDATED: Pass userService to AuthService
 
 	sheepService := services.NewSheepService(sheepRepo, treatmentRepo, lambingRepo)
 	vaccineService := services.NewVaccineService(vaccineRepo)
@@ -64,28 +62,14 @@ func main() {
 	reminderService := services.NewReminderService(sheepRepo, vaccineRepo, reminderNotifier)
 
 	// --- 5. Initialize Scheduler ---
-	// The scheduler needs the User ID to schedule reminders for a specific user.
-	// In a full system, scheduler might get user IDs from database or a dedicated service.
-	// You might fetch all user IDs and schedule reminders for each.
-	fixedUserIDForSchedulerStr := os.Getenv("SCHEDULER_USER_ID")
-	if fixedUserIDForSchedulerStr == "" {
-		fixedUserIDForSchedulerStr = "1" // default ID for testing
-		log.Printf("SCHEDULER_USER_ID not set, using default: %s", fixedUserIDForSchedulerStr)
-	}
-	fixedID, _ := strconv.ParseUint(fixedUserIDForSchedulerStr, 10, 64)
-
-	appScheduler := scheduler.NewScheduler(reminderService, uint(fixedID))
+	appScheduler := scheduler.NewScheduler(reminderService, cfg.SchedulerUserID)
 	appScheduler.StartScheduler() // Start the scheduler in a goroutine
 
 	// --- 6. Initialize and Start HTTP Server (Presentation Layer) ---
 	// User ID for handlers will now come from context after authentication.
 	// No need to pass fixedUserID to handlers directly anymore.
 	server := http.NewServer(sheepService, vaccineService, lambingService, treatmentService, authService, userService, reminderService)
-	apiPort := os.Getenv("API_PORT")
-	if apiPort == "" {
-		apiPort = "8080" // Default port for API
-	}
-	serverAddr := fmt.Sprintf(":%s", apiPort)
+	serverAddr := fmt.Sprintf(":%s", cfg.APIPort)
 	server.Start(serverAddr) // This call is blocking
 
 	// The scheduler and HTTP server run concurrently.

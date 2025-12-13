@@ -2,9 +2,8 @@ package services
 
 import (
 	"context"
-	"errors" // Make sure errors is imported here
+	"errors"
 	"fmt"
-	"os" // For JWT_SECRET_KEY
 	"strconv"
 	"time"
 
@@ -32,15 +31,12 @@ type AuthService struct {
 
 // NewAuthService creates a new AuthService instance.
 // UPDATED: Now accepts UserService as a dependency.
-func NewAuthService(userRepo ports.UserRepository, userService *UserService) *AuthService {
-	// Get JWT secret key from environment variable
-	jwtSecret := os.Getenv("JWT_SECRET_KEY")
+func NewAuthService(userRepo ports.UserRepository, userService *UserService, jwtSecret string) *AuthService {
 	if jwtSecret == "" {
-		// In production, this should be a strong, random key.
-		// For development, it's okay to have a default, but warn the user.
 		jwtSecret = "supersecretjwtkeythatshouldbechangedinproduction"
 		fmt.Println("WARNING: JWT_SECRET_KEY not set, using default. Change in production!")
 	}
+
 	return &AuthService{
 		userRepo:     userRepo,
 		userService:  userService, // Assign the passed UserService
